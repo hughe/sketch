@@ -401,17 +401,17 @@ Trigger graceful shutdown
 - [x] Test file editing and saving
 
 #### Diff Viewer Component
-- [ ] Create `web/src/components/diff-viewer.ts`
-- [ ] Simplify from `sketch-diff2-view.ts`
-- [ ] Remove range picker (branches from backend)
-- [ ] Keep file selector dropdown
-- [ ] Add file statistics display (+/- counts)
-- [ ] Load diff on mount
-- [ ] Handle monaco-save events from Monaco component
-- [ ] Call save API on file edits
-- [ ] Handle loading and error states
-- [ ] Test file switching
-- [ ] Test file editing workflow
+- [x] Create `web/src/components/diff-viewer.ts`
+- [x] Simplify from `sketch-diff2-view.ts`
+- [x] Remove range picker (branches from backend)
+- [x] Keep file selector dropdown
+- [x] Add file statistics display (+/- counts)
+- [x] Load diff on mount
+- [x] Handle monaco-save events from Monaco component
+- [x] Call save API on file edits
+- [x] Handle loading and error states
+- [x] Test file switching
+- [x] Test file editing workflow
 
 #### Notes Panel Component
 - [ ] Create `web/src/components/notes-panel.ts`
