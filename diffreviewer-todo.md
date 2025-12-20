@@ -267,8 +267,8 @@ Trigger graceful shutdown
 ### Backend Tasks
 
 #### Project Setup
-- [ ] Create `diffreviewer` directory structure
-- [ ] Initialize Go module (`go mod init diffreviewer`)
+- [x] Create `diffreviewer` directory structure
+- [x] Initialize Go module (`go mod init diffreviewer`)
 - [ ] Create `cmd/diffreviewer/main.go` with CLI parsing
 - [ ] Add CLI flags: base-branch (optional, default "main"), changed-branch, port, notes (optional), repo
 - [ ] Validate CLI arguments
@@ -337,14 +337,14 @@ Trigger graceful shutdown
 ### Frontend Tasks
 
 #### Project Setup
-- [ ] Create `web` directory structure
-- [ ] Initialize npm project (`npm init`)
-- [ ] Add dependencies: lit, monaco-editor, tailwindcss
-- [ ] Create `vite.config.ts` for build
-- [ ] Create `tsconfig.json` for TypeScript
-- [ ] Set up Tailwind CSS configuration
-- [ ] Create `index.html` template
-- [ ] Add build scripts to `package.json`
+- [x] Create `web` directory structure
+- [x] Initialize npm project (`npm init`)
+- [x] Add dependencies: lit, monaco-editor, tailwindcss
+- [x] Create `vite.config.ts` for build
+- [x] Create `tsconfig.json` for TypeScript
+- [x] Set up Tailwind CSS configuration
+- [x] Create `index.html` template
+- [x] Add build scripts to `package.json`
 
 #### Type Definitions
 - [ ] Create `web/src/types.ts`
@@ -451,13 +451,13 @@ Trigger graceful shutdown
 ### Build & Integration
 
 #### Build System
-- [ ] Create root `Makefile`
-- [ ] Add `make build-frontend` target (runs vite build)
-- [ ] Add `make build-backend` target (runs go build)
-- [ ] Add `make build` target (builds both)
+- [x] Create root `Makefile`
+- [x] Add `make build-frontend` target (runs vite build)
+- [x] Add `make build-backend` target (runs go build)
+- [x] Add `make build` target (builds both)
 - [ ] Embed frontend assets into Go binary
-- [ ] Add `make dev` target for development
-- [ ] Add `make clean` target
+- [x] Add `make dev` target for development
+- [x] Add `make clean` target
 - [ ] Test build process
 
 #### Integration
