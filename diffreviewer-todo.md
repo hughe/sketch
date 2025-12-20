@@ -389,16 +389,16 @@ Trigger graceful shutdown
 - [x] Test notes service
 
 #### Monaco Component
-- [ ] Create `web/src/components/monaco-view.ts`
-- [ ] Extract from `sketch-monaco-view.ts`
-- [ ] Keep edit functionality on right side (modified code)
-- [ ] Keep diff display with syntax highlighting
-- [ ] Keep save handler (Cmd/Ctrl+S)
-- [ ] Add line click event for notes (include line content)
-- [ ] Add glyph decorations for lines with notes
-- [ ] Style notes indicators (e.g., comment icons)
-- [ ] Test Monaco integration
-- [ ] Test file editing and saving
+- [x] Create `web/src/components/monaco-view.ts`
+- [x] Extract from `sketch-monaco-view.ts`
+- [x] Keep edit functionality on right side (modified code)
+- [x] Keep diff display with syntax highlighting
+- [x] Keep save handler (Cmd/Ctrl+S)
+- [x] Add line click event for notes (include line content)
+- [x] Add glyph decorations for lines with notes
+- [x] Style notes indicators (e.g., comment icons)
+- [x] Test Monaco integration
+- [x] Test file editing and saving
 
 #### Diff Viewer Component
 - [ ] Create `web/src/components/diff-viewer.ts`
