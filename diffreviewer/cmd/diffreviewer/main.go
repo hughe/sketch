@@ -19,6 +19,8 @@ import (
 	"github.com/hughe/diffreviewer/internal/notes"
 )
 
+// NOTE: web directory is created during build (make build-frontend)
+//
 //go:embed all:web
 var webDist embed.FS
 
