@@ -1,0 +1,11 @@
+# Build outputs
+/bin/
+/web/dist/
+/web/node_modules/
+/web/package-lock.json
+
+# Embedded web assets (copied during build)
+/cmd/diffreviewer/web/
+
+# Notes output
+*.notes.md
