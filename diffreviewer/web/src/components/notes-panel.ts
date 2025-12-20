@@ -1,6 +1,6 @@
 import { html, css, LitElement } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
-import { deleteNote, addNote } from '../services/notes';
+import { deleteNote } from '../services/notes';
 import type { Note } from '../types';
 
 @customElement('notes-panel')

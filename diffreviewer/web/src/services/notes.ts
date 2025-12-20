@@ -22,8 +22,9 @@ export async function fetchNotes(): Promise<NotesResponse> {
       throw new Error(`Failed to fetch notes: ${response.statusText}`);
     }
     
-    notesCache = await response.json();
-    return notesCache;
+    const data: NotesResponse = await response.json();
+    notesCache = data;
+    return data;
   } catch (error) {
     console.error('Error fetching notes:', error);
     throw error;

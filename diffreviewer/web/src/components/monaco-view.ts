@@ -210,13 +210,14 @@ export class MonacoView extends LitElement {
   }
 
   public updateNoteDecorations(linesWithNotes: number[]) {
-    if (!this.editor || !window.monaco) return;
+    const monaco = window.monaco;
+    if (!this.editor || !monaco) return;
 
     const modifiedEditor = this.editor.getModifiedEditor();
     if (!modifiedEditor || !this.modifiedDecorations) return;
 
     const decorations = linesWithNotes.map((line) => ({
-      range: new window.monaco.Range(line, 1, line, 1),
+      range: new monaco.Range(line, 1, line, 1),
       options: {
         isWholeLine: false,
         glyphMarginClassName: 'comment-glyph',
@@ -303,9 +304,12 @@ export class MonacoView extends LitElement {
 
     if (changedProperties.has('theme')) {
       if (this.editor && window.monaco) {
-        window.monaco.editor.setTheme(
-          this.theme === 'dark' ? 'vs-dark' : 'vs'
-        );
+        const monaco = window.monaco;
+        if (monaco) {
+          monaco.editor.setTheme(
+            this.theme === 'dark' ? 'vs-dark' : 'vs'
+          );
+        }
       }
     }
   }
