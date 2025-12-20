@@ -7,16 +7,26 @@ Extract Sketch's diff viewer into a standalone CLI tool called `diffreviewer` th
 ## Command Line Interface
 
 ```bash
-diffreviewer <base-branch> <changed-branch> [options]
+diffreviewer [base-branch] <changed-branch> [options]
 
 Options:
   --port, -p        Port number (default: 8000)
-  --notes, -n       Notes file path (required)
+  --notes, -n       Notes file path (optional, if not specified notes go to stdout)
   --repo, -r        Repository path (default: current directory)
+
+Defaults:
+  base-branch       Defaults to "main" if not specified
 ```
 
-Example:
+Examples:
 ```bash
+# Compare feature-branch to main, notes to file
+diffreviewer feature-branch --notes review-notes.md
+
+# Compare feature-branch to develop, notes to stdout
+diffreviewer develop feature-branch
+
+# Compare feature-branch to main on custom port
 diffreviewer main feature-branch --notes review-notes.md --port 8080
 ```
 
@@ -33,7 +43,8 @@ diffreviewer main feature-branch --notes review-notes.md --port 8080
 - Remove range picker (branches specified via CLI)
 - Add notes UI with line-specific commenting
 - Add "Done" button that calls shutdown endpoint
-- Monaco editor for diff display
+- Monaco editor for diff display with edit capability
+- General notes text box at bottom (like chatInput) for overall review comments
 
 ### Notes Format
 Markdown file with structured notes:
@@ -42,16 +53,33 @@ Markdown file with structured notes:
 
 ## file/path/example.go
 ### Line 42
+```
+func processData(input string) error {
+```
 - This needs refactoring
 - Consider error handling
 
 ### Line 100
+```
+return nil
+```
 - Good improvement!
 
 ## another/file.ts
 ### Line 15
-- Question: Why was this changed?
 ```
+const result = await fetchData();
+```
+- Question: Why was this changed?
+
+## General Notes
+
+Overall the changes look good. Need to verify test coverage
+for the new functionality. Consider adding more documentation.
+```
+
+Each line-specific note includes the actual line content in triple backticks for context.
+The "General Notes" section is populated from the text box at the bottom of the UI.
 
 ## Project Structure
 
@@ -110,16 +138,30 @@ Returns file content by git hash
 
 ### GET /api/notes
 Returns current notes
-- Response: `Note[]` with structure: `{file: string, line: number, text: string}`
+- Response: `{lineNotes: Note[], generalNotes: string}` where Note is `{file: string, line: number, lineContent: string, text: string}`
 
 ### POST /api/notes
-Add or update a note
-- Body: `{file: string, line: number, text: string}`
+Add or update a line-specific note
+- Body: `{file: string, line: number, lineContent: string, text: string}`
 - Response: success/error
 
 ### DELETE /api/notes
-Delete a note
+Delete a line-specific note
 - Body: `{file: string, line: number}`
+- Response: success/error
+
+### POST /api/general-notes
+Update general notes text
+- Body: `{text: string}`
+- Response: success/error
+
+### GET /api/general-notes
+Get current general notes
+- Response: `{text: string}`
+
+### POST /api/save-file
+Save edited file content back to working directory
+- Body: `{path: string, content: string}`
 - Response: success/error
 
 ### POST /api/shutdown
@@ -131,22 +173,22 @@ Trigger graceful shutdown
 ### Removed Features
 - Range picker (branches fixed at startup)
 - Branch/commit timeline
-- Editable diffs (read-only review mode)
 - Untracked files notification
 - Multiple view modes (only single file view)
-- Save functionality
 
 ### Added Features
 - Line-specific notes with markdown export
-- "Done" button for exit
+- General notes text box for overall review comments
+- "Done" button for exit that saves general notes
 - Simplified UI focused on review workflow
-- Notes persistence to markdown file
+- Notes persistence to markdown file or stdout
+- Default base branch to "main" for convenience
+- File editing capability (same as Sketch)
 
 ### Simplified Features
 - No authentication/sessions
 - Single repository context
 - No dynamic branch switching
-- No file editing
 
 ## Dependencies to Extract
 
@@ -158,8 +200,8 @@ Trigger graceful shutdown
 
 ### From Sketch Frontend
 - `sketch-diff2-view.ts` → `diff-viewer.ts` (simplified)
-- `sketch-monaco-view.ts` → `monaco-view.ts` (no editing)
-- `git-data-service.ts` → `services/api.ts` (adapted)
+- `sketch-monaco-view.ts` → `monaco-view.ts` (keep editing capability)
+- `git-data-service.ts` → `services/api.ts` (adapted, including save)
 - `types.ts` → `types.ts` (DiffFile and related types)
 - `sketch-tailwind-element.ts` → inline or remove (simplify styling)
 
@@ -228,8 +270,9 @@ Trigger graceful shutdown
 - [ ] Create `diffreviewer` directory structure
 - [ ] Initialize Go module (`go mod init diffreviewer`)
 - [ ] Create `cmd/diffreviewer/main.go` with CLI parsing
-- [ ] Add CLI flags: base-branch, changed-branch, port, notes, repo
+- [ ] Add CLI flags: base-branch (optional, default "main"), changed-branch, port, notes (optional), repo
 - [ ] Validate CLI arguments
+- [ ] Add logic to write notes to stdout if --notes not specified
 
 #### Git Integration
 - [ ] Create `internal/git/diff.go`
@@ -252,26 +295,31 @@ Trigger graceful shutdown
 - [ ] Create `internal/handlers/diff.go`
 - [ ] Implement `GET /api/diff` handler
 - [ ] Implement `GET /api/file-content?hash=...` handler
+- [ ] Implement `POST /api/save-file` handler (save edited content)
 - [ ] Add error handling and proper HTTP status codes
 - [ ] Add JSON response helpers
 - [ ] Test handlers with sample repository
+- [ ] Test file save functionality
 
 #### Notes System
 - [ ] Create `internal/notes/notes.go`
-- [ ] Define `Note` struct: `{File string, Line int, Text string}`
-- [ ] Implement `LoadNotes(filename)` function
-- [ ] Implement `SaveNotes(filename, notes)` function
-- [ ] Add file locking mechanism
+- [ ] Define `Note` struct: `{File string, Line int, LineContent string, Text string}`
+- [ ] Add `GeneralNotes string` field to notes structure
+- [ ] Implement `SaveNotes(filename, notes, generalNotes)` function
+- [ ] Implement `SaveNotesToWriter(w io.Writer, notes, generalNotes)` for stdout support
 - [ ] Create `internal/notes/markdown.go`
-- [ ] Implement markdown formatting for notes
-- [ ] Parse existing markdown notes file if it exists
+- [ ] Implement markdown formatting for notes with "General Notes" section
+- [ ] Include line content in triple backticks before each note
 - [ ] Test notes I/O with sample data
+- [ ] Test notes output to stdout
 
 #### API Handlers - Notes
 - [ ] Create `internal/handlers/notes.go`
-- [ ] Implement `GET /api/notes` handler
-- [ ] Implement `POST /api/notes` handler (add/update)
-- [ ] Implement `DELETE /api/notes` handler
+- [ ] Implement `GET /api/notes` handler (returns line notes and general notes)
+- [ ] Implement `POST /api/notes` handler (add/update line note)
+- [ ] Implement `DELETE /api/notes` handler (delete line note)
+- [ ] Implement `POST /api/general-notes` handler (update general notes)
+- [ ] Implement `GET /api/general-notes` handler (get general notes)
 - [ ] Add validation for note data
 - [ ] Thread-safe access to notes file
 - [ ] Test concurrent note updates
@@ -279,8 +327,11 @@ Trigger graceful shutdown
 #### Shutdown
 - [ ] Create `internal/handlers/shutdown.go`
 - [ ] Implement `POST /api/shutdown` handler
+- [ ] Receive general notes text in shutdown request body
+- [ ] Save general notes before shutdown
 - [ ] Trigger graceful server shutdown
-- [ ] Ensure notes are flushed before exit
+- [ ] Ensure all notes are flushed before exit (to file or stdout)
+- [ ] Print notes to stdout if --notes not specified
 - [ ] Print exit message
 
 ### Frontend Tasks
@@ -298,7 +349,8 @@ Trigger graceful shutdown
 #### Type Definitions
 - [ ] Create `web/src/types.ts`
 - [ ] Extract `DiffFile` interface from Sketch
-- [ ] Add `Note` interface: `{file: string, line: number, text: string}`
+- [ ] Add `Note` interface: `{file: string, line: number, lineContent: string, text: string}`
+- [ ] Add `NotesResponse` interface: `{lineNotes: Note[], generalNotes: string}`
 - [ ] Add API response types
 - [ ] Export all types
 
@@ -306,28 +358,33 @@ Trigger graceful shutdown
 - [ ] Create `web/src/services/api.ts`
 - [ ] Implement `fetchDiff()` function
 - [ ] Implement `fetchFileContent(hash)` function
+- [ ] Implement `saveFileContent(path, content)` function
 - [ ] Add error handling wrapper
 - [ ] Add TypeScript types for responses
 - [ ] Test API calls
 
 #### Notes Service
 - [ ] Create `web/src/services/notes.ts`
-- [ ] Implement `fetchNotes()` function
-- [ ] Implement `addNote(file, line, text)` function
-- [ ] Implement `updateNote(file, line, text)` function
+- [ ] Implement `fetchNotes()` function (returns line notes and general notes)
+- [ ] Implement `addNote(file, line, lineContent, text)` function
+- [ ] Implement `updateNote(file, line, lineContent, text)` function
 - [ ] Implement `deleteNote(file, line)` function
+- [ ] Implement `updateGeneralNotes(text)` function
+- [ ] Implement `fetchGeneralNotes()` function
 - [ ] Add local caching of notes
 - [ ] Test notes service
 
 #### Monaco Component
 - [ ] Create `web/src/components/monaco-view.ts`
 - [ ] Extract from `sketch-monaco-view.ts`
-- [ ] Remove edit functionality (read-only)
+- [ ] Keep edit functionality on right side (modified code)
 - [ ] Keep diff display with syntax highlighting
-- [ ] Add line click event for notes
+- [ ] Keep save handler (Cmd/Ctrl+S)
+- [ ] Add line click event for notes (include line content)
 - [ ] Add glyph decorations for lines with notes
 - [ ] Style notes indicators (e.g., comment icons)
 - [ ] Test Monaco integration
+- [ ] Test file editing and saving
 
 #### Diff Viewer Component
 - [ ] Create `web/src/components/diff-viewer.ts`
@@ -336,14 +393,17 @@ Trigger graceful shutdown
 - [ ] Keep file selector dropdown
 - [ ] Add file statistics display (+/- counts)
 - [ ] Load diff on mount
+- [ ] Handle monaco-save events from Monaco component
+- [ ] Call save API on file edits
 - [ ] Handle loading and error states
 - [ ] Test file switching
+- [ ] Test file editing workflow
 
 #### Notes Panel Component
 - [ ] Create `web/src/components/notes-panel.ts`
 - [ ] Add sidebar or overlay for notes
 - [ ] Display list of all notes grouped by file
-- [ ] Show file name and line number for each note
+- [ ] Show file name, line number, and quoted line content for each note
 - [ ] Add "Jump to line" functionality
 - [ ] Add edit/delete buttons for notes
 - [ ] Add new note form
@@ -352,17 +412,29 @@ Trigger graceful shutdown
 #### Done Button Component
 - [ ] Create `web/src/components/done-button.ts`
 - [ ] Add prominent "Done" button in header
-- [ ] Call shutdown API on click
+- [ ] Get general notes text from text box on click
+- [ ] Send general notes text in shutdown API call
 - [ ] Show confirmation dialog
 - [ ] Display "Shutting down..." message
 - [ ] Style done button (prominent, hard to miss)
+
+#### General Notes Text Box
+- [ ] Create `web/src/components/general-notes-input.ts` (or add to main app)
+- [ ] Add text box at bottom of screen (like chatInput)
+- [ ] Style similar to Sketch's chat input
+- [ ] Load existing general notes on mount
+- [ ] Auto-save general notes on change (debounced)
+- [ ] Provide textarea for multi-line input
+- [ ] Add placeholder text: "Add general review notes here..."
+- [ ] Make resizable
 
 #### Main App
 - [ ] Create `web/src/main.ts`
 - [ ] Initialize app shell
 - [ ] Register all web components
 - [ ] Add global styles
-- [ ] Create app layout: header, diff view, notes panel
+- [ ] Create app layout: header, diff view, notes panel, general notes input at bottom
+- [ ] Ensure general notes input is always visible at bottom
 - [ ] Add dark mode support
 - [ ] Test overall integration
 
@@ -405,6 +477,9 @@ Trigger graceful shutdown
 - [ ] Test with renamed files
 - [ ] Test with deleted files
 - [ ] Test with added files
+- [ ] Test file editing and saving
+- [ ] Test save with Cmd/Ctrl+S keyboard shortcut
+- [ ] Test editing multiple files
 - [ ] Test notes on different lines
 - [ ] Test concurrent note updates
 - [ ] Test markdown output format
@@ -418,9 +493,10 @@ Trigger graceful shutdown
 - [ ] Write `README.md` with overview
 - [ ] Add installation instructions
 - [ ] Add usage examples
-- [ ] Document CLI flags
+- [ ] Document CLI flags and defaults
 - [ ] Add screenshots
 - [ ] Document notes file format
+- [ ] Document stdout notes output format
 - [ ] Add troubleshooting section
 - [ ] Document keyboard shortcuts
 - [ ] Add contributing guidelines
@@ -476,16 +552,24 @@ Trigger graceful shutdown
 - Easy to edit manually
 - Version control friendly
 - Universal format
+- Works well for both file and stdout output
 
 ## Success Criteria
 
 1. ✅ CLI successfully parses arguments and starts server
-2. ✅ Browser opens to correct URL
-3. ✅ Diff displays correctly for given branches
-4. ✅ User can navigate between files
-5. ✅ User can click line to add note
-6. ✅ Notes save to markdown file immediately
-7. ✅ Markdown file has correct format with file and line info
-8. ✅ "Done" button exits program gracefully
-9. ✅ Program works on Linux, macOS, and Windows
-10. ✅ Single binary with no external dependencies
+2. ✅ Base branch defaults to "main" if not specified
+3. ✅ Browser opens to correct URL
+4. ✅ Diff displays correctly for given branches
+5. ✅ User can navigate between files
+6. ✅ User can edit files on the right side (modified code)
+7. ✅ User can save file changes with Cmd/Ctrl+S
+8. ✅ File changes persist to working directory
+9. ✅ User can click line to add line-specific note
+10. ✅ User can type general notes in text box at bottom
+11. ✅ Line-specific notes save immediately (if --notes specified)
+12. ✅ General notes auto-save on change
+13. ✅ "Done" button saves general notes and exits gracefully
+14. ✅ All notes print to stdout on exit (if --notes not specified)
+15. ✅ Markdown output has correct format with file, line info, and general notes section
+16. ✅ Program works on Linux, macOS, and Windows
+17. ✅ Single binary with no external dependencies
