@@ -347,12 +347,12 @@ Trigger graceful shutdown
 - [x] Add build scripts to `package.json`
 
 #### Type Definitions
-- [ ] Create `web/src/types.ts`
-- [ ] Extract `DiffFile` interface from Sketch
-- [ ] Add `Note` interface: `{file: string, line: number, lineContent: string, text: string}`
-- [ ] Add `NotesResponse` interface: `{lineNotes: Note[], generalNotes: string}`
-- [ ] Add API response types
-- [ ] Export all types
+- [x] Create `web/src/types.ts`
+- [x] Extract `DiffFile` interface from Sketch
+- [x] Add `Note` interface: `{file: string, line: number, lineContent: string, text: string}`
+- [x] Add `NotesResponse` interface: `{lineNotes: Note[], generalNotes: string}`
+- [x] Add API response types
+- [x] Export all types
 
 #### API Service
 - [ ] Create `web/src/services/api.ts`
