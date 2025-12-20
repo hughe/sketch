@@ -47,14 +47,6 @@ make clean
 make dev
 ```
 
-## Development Status
-
-### Completed
-- ✅ Directory structure
-- ✅ Go module initialization
-- ✅ Frontend build system (Vite)
-- ✅ Tailwind CSS configuration
-- ✅ Makefile for builds
 
 ### TODO
 - See `../diffreviewer-todo.md` for detailed implementation plan
