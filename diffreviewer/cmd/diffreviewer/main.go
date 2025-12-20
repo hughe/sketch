@@ -22,7 +22,7 @@ func main() {
 
 	http.Handle("/", http.FileServer(http.FS(distFS)))
 
-	fmt.Printf("DiffReviewer starting on http://localhost%s\n", port)
+	fmt.Printf("\nDiffReviewer starting on http://localhost%s\n", port)
 	if err := http.ListenAndServe(port, nil); err != nil {
 		log.Fatal(err)
 	}
