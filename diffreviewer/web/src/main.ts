@@ -1,9 +1,10 @@
-import './styles.css'
+import './styles.css';
+import './components/app-shell';
 
 // App initialization
-console.log('DiffReviewer loading...')
+console.log('DiffReviewer loading...');
 
-const app = document.getElementById('app')
+const app = document.getElementById('app');
 if (app) {
-  app.innerHTML = '<h1>DiffReviewer</h1>'
+  app.innerHTML = '<app-shell></app-shell>';
 }

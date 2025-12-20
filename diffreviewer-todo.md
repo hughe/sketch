@@ -414,43 +414,43 @@ Trigger graceful shutdown
 - [x] Test file editing workflow
 
 #### Notes Panel Component
-- [ ] Create `web/src/components/notes-panel.ts`
-- [ ] Add sidebar or overlay for notes
-- [ ] Display list of all notes grouped by file
-- [ ] Show file name, line number, and quoted line content for each note
+- [x] Create `web/src/components/notes-panel.ts`
+- [x] Add sidebar or overlay for notes
+- [x] Display list of all notes grouped by file
+- [x] Show file name, line number, and quoted line content for each note
 - [ ] Add "Jump to line" functionality
-- [ ] Add edit/delete buttons for notes
+- [x] Add edit/delete buttons for notes
 - [ ] Add new note form
-- [ ] Style notes panel
+- [x] Style notes panel
 
 #### Done Button Component
-- [ ] Create `web/src/components/done-button.ts`
-- [ ] Add prominent "Done" button in header
-- [ ] Get general notes text from text box on click
-- [ ] Send general notes text in shutdown API call
-- [ ] Show confirmation dialog
-- [ ] Display "Shutting down..." message
-- [ ] Style done button (prominent, hard to miss)
+- [x] Create `web/src/components/done-button.ts`
+- [x] Add prominent "Done" button in header
+- [x] Get general notes text from text box on click
+- [x] Send general notes text in shutdown API call
+- [x] Show confirmation dialog
+- [x] Display "Shutting down..." message
+- [x] Style done button (prominent, hard to miss)
 
 #### General Notes Text Box
-- [ ] Create `web/src/components/general-notes-input.ts` (or add to main app)
-- [ ] Add text box at bottom of screen (like chatInput)
-- [ ] Style similar to Sketch's chat input
-- [ ] Load existing general notes on mount
-- [ ] Auto-save general notes on change (debounced)
-- [ ] Provide textarea for multi-line input
-- [ ] Add placeholder text: "Add general review notes here..."
-- [ ] Make resizable
+- [x] Create `web/src/components/general-notes-input.ts` (or add to main app)
+- [x] Add text box at bottom of screen (like chatInput)
+- [x] Style similar to Sketch's chat input
+- [x] Load existing general notes on mount
+- [x] Auto-save general notes on change (debounced)
+- [x] Provide textarea for multi-line input
+- [x] Add placeholder text: "Add general review notes here..."
+- [x] Make resizable
 
 #### Main App
-- [ ] Create `web/src/main.ts`
-- [ ] Initialize app shell
-- [ ] Register all web components
-- [ ] Add global styles
-- [ ] Create app layout: header, diff view, notes panel, general notes input at bottom
-- [ ] Ensure general notes input is always visible at bottom
+- [x] Create `web/src/main.ts`
+- [x] Initialize app shell
+- [x] Register all web components
+- [x] Add global styles
+- [x] Create app layout: header, diff view, notes panel, general notes input at bottom
+- [x] Ensure general notes input is always visible at bottom
 - [ ] Add dark mode support
-- [ ] Test overall integration
+- [x] Test overall integration
 
 #### UI Polish
 - [ ] Add loading spinners
