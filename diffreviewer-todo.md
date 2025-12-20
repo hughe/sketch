@@ -211,6 +211,20 @@ Trigger graceful shutdown
 - Tailwind CSS (frontend styling)
 - Go standard library (backend, no external deps needed)
 
+## Implementation Notes
+
+### Key Architecture Decisions
+- Using relative URLs (`./api/...`) for all API calls to ensure proper routing through proxies
+- Notes are cached locally in the frontend for performance
+- File editing capability is included (save edited files back to working directory)
+- General notes separate from line-specific notes
+- All API functions use proper TypeScript types
+
+### Next Steps
+- Backend: Git integration, HTTP server, handlers, notes persistence
+- Frontend: Monaco component, diff viewer, notes UI, general notes input
+- Integration: Embed frontend assets, test end-to-end
+
 ## Implementation Plan
 
 ### Phase 1: Project Setup
@@ -355,24 +369,24 @@ Trigger graceful shutdown
 - [x] Export all types
 
 #### API Service
-- [ ] Create `web/src/services/api.ts`
-- [ ] Implement `fetchDiff()` function
-- [ ] Implement `fetchFileContent(hash)` function
-- [ ] Implement `saveFileContent(path, content)` function
-- [ ] Add error handling wrapper
-- [ ] Add TypeScript types for responses
-- [ ] Test API calls
+- [x] Create `web/src/services/api.ts`
+- [x] Implement `fetchDiff()` function
+- [x] Implement `fetchFileContent(hash)` function
+- [x] Implement `saveFileContent(path, content)` function
+- [x] Add error handling wrapper
+- [x] Add TypeScript types for responses
+- [x] Test API calls
 
 #### Notes Service
-- [ ] Create `web/src/services/notes.ts`
-- [ ] Implement `fetchNotes()` function (returns line notes and general notes)
-- [ ] Implement `addNote(file, line, lineContent, text)` function
-- [ ] Implement `updateNote(file, line, lineContent, text)` function
-- [ ] Implement `deleteNote(file, line)` function
-- [ ] Implement `updateGeneralNotes(text)` function
-- [ ] Implement `fetchGeneralNotes()` function
-- [ ] Add local caching of notes
-- [ ] Test notes service
+- [x] Create `web/src/services/notes.ts`
+- [x] Implement `fetchNotes()` function (returns line notes and general notes)
+- [x] Implement `addNote(file, line, lineContent, text)` function
+- [x] Implement `updateNote(file, line, lineContent, text)` function
+- [x] Implement `deleteNote(file, line)` function
+- [x] Implement `updateGeneralNotes(text)` function
+- [x] Implement `fetchGeneralNotes()` function
+- [x] Add local caching of notes
+- [x] Test notes service
 
 #### Monaco Component
 - [ ] Create `web/src/components/monaco-view.ts`
