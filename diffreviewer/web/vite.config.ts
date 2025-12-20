@@ -1,7 +1,11 @@
 import { defineConfig } from 'vite'
 import path from 'path'
+import monacoEditorPlugin from 'vite-plugin-monaco-editor-esm'
 
 export default defineConfig({
+  plugins: [
+    monacoEditorPlugin({})
+  ],
   root: '.',
   build: {
     outDir: 'dist',

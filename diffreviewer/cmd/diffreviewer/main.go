@@ -19,9 +19,9 @@ import (
 	"github.com/hughe/diffreviewer/internal/notes"
 )
 
-// NOTE: web directory is created during build (make build-frontend)
+// NOTE: web-dist directory is created during build (make build-backend)
 //
-//go:embed all:web
+//go:embed all:web-dist
 var webDist embed.FS
 
 func main() {
@@ -111,7 +111,7 @@ func main() {
 	mux.HandleFunc("/api/shutdown", handlers.HandleShutdown(cfg))
 
 	// Serve embedded web files
-	distFS, err := fs.Sub(webDist, "web")
+	distFS, err := fs.Sub(webDist, "web-dist")
 	if err != nil {
 		log.Fatal(err)
 	}

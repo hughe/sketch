@@ -101,6 +101,8 @@ export class DiffViewer extends LitElement {
       console.error('Error loading diff:', err);
     } finally {
       this.loading = false;
+      // Force update to ensure re-render after async operations
+      this.requestUpdate();
     }
   }
 

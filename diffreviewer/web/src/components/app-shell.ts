@@ -121,6 +121,7 @@ export class AppShell extends LitElement {
 
   private toggleNotesPanel() {
     this.showNotesPanel = !this.showNotesPanel;
+    this.requestUpdate();
   }
 
   private handleLineClick(e: CustomEvent) {

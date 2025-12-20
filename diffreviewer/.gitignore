@@ -6,6 +6,7 @@
 
 # Embedded web assets (copied during build)
 /cmd/diffreviewer/web/
+/cmd/diffreviewer/web-dist/
 
 # Notes output
 *.notes.md
