@@ -62,7 +62,7 @@ diffreviewer/
 │       └── main.go              # CLI entry point
 ├── internal/
 │   ├── server/
-│   │   └── server.go            # HTTP server
+│   │   └── servero            # HTTP server
 │   ├── git/
 │   │   └── diff.go              # Git operations (extracted from git_tools)
 │   ├── notes/
