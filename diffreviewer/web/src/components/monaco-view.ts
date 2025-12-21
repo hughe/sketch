@@ -79,6 +79,21 @@ export class MonacoView extends LitElement {
       background-color: rgba(255, 0, 0, 0.2) !important;
     }
 
+    /* Line numbers and gutter visibility */
+    .monaco-editor .margin,
+    .monaco-editor .glyph-margin {
+      background-color: #f5f5f5 !important;
+    }
+    
+    .monaco-editor .margin-view-overlays .line-numbers {
+      color: #237893 !important;
+      font-weight: 600 !important;
+    }
+    
+    .monaco-editor .margin-view-overlays .line-numbers.active-line-number {
+      color: #0B216F !important;
+    }
+
     .save-indicator {
       position: absolute;
       top: 8px;
