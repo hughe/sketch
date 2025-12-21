@@ -238,6 +238,8 @@ export class RangePicker extends DiffReviewerElement {
   private toggleDropdown(e: Event) {
     e.stopPropagation();
     this.dropdownOpen = !this.dropdownOpen;
+    // Explicitly request update since Shadow DOM is disabled
+    this.requestUpdate();
 
     if (this.dropdownOpen) {
       setTimeout(() => {
@@ -248,11 +250,15 @@ export class RangePicker extends DiffReviewerElement {
 
   private closeDropdown = () => {
     this.dropdownOpen = false;
+    // Explicitly request update since Shadow DOM is disabled
+    this.requestUpdate();
   };
 
   private selectCommit(hash: string) {
     this.fromCommit = hash;
     this.dropdownOpen = false;
+    // Explicitly request update since Shadow DOM is disabled
+    this.requestUpdate();
     this.dispatchRangeEvent();
   }
 

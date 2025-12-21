@@ -138,11 +138,11 @@ export class AppShell extends DiffReviewerElement {
     this.currentRange = e.detail.range;
     console.log('Range changed:', this.currentRange);
     
-    // Manually update diff-viewer since Lit reactivity doesn't work without Shadow DOM
+    // Call loadDiffForRange directly instead of relying on property binding
+    // This works around Lit reactivity issues when Shadow DOM is disabled
     const diffViewer = this.querySelector('diff-viewer') as any;
-    if (diffViewer) {
-      diffViewer.currentRange = this.currentRange;
-      diffViewer.requestUpdate();
+    if (diffViewer && diffViewer.loadDiffForRange) {
+      diffViewer.loadDiffForRange(this.currentRange);
     }
   }
 

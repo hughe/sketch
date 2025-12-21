@@ -701,43 +701,25 @@ Tested with test repository comparing two commits:
 
 ## Known Issues
 
-### Lit Reactivity with Disabled Shadow DOM (Dec 21, 2025)
+### ~~Lit Reactivity with Disabled Shadow DOM~~ (Dec 21, 2025 - RESOLVED)
 
 **Problem**: Range picker component works correctly and dispatches range-change events, but the diff-viewer component doesn't automatically update when receiving the new range through Lit's property binding.
 
-**Root Cause**: When Shadow DOM is disabled (by returning `this` from `createRenderRoot()`), Lit's reactive property system doesn't trigger re-renders the same way it does with Shadow DOM enabled. The `updated()` lifecycle callback is not being called when parent components update child component properties via `.property=${value}` syntax.
+**Root Cause**: When Shadow DOM is disabled (by returning `this` from `createRenderRoot()`), Lit's reactive property system doesn't trigger re-renders the same way it does with Shadow DOM enabled.
 
-**Current Workaround Attempted**:
-- Added manual property assignment in `app-shell.ts` `handleRangeChange()` method
-- Directly sets `diffViewer.currentRange` and calls `diffViewer.requestUpdate()`
-- This approach is inconsistent and doesn't always work
+**Solution Implemented** (Dec 21, 2025):
+Used direct method calls instead of property binding:
+1. Added public `loadDiffForRange(range)` method to `diff-viewer.ts`
+2. Modified `app-shell.ts` to call this method directly when range changes
+3. Added explicit `requestUpdate()` calls in range-picker component after state changes (toggleDropdown, closeDropdown, selectCommit)
 
-**Symptoms**:
-- Range picker displays correctly and shows correct commit selection
-- Console logs show "Range changed:" with correct from/to values  
-- But diff-viewer shows "Loading diff..." indefinitely
-- `diffViewer.currentRange` remains `null` even after range change event
+**Result**: ✅ Range picker now works correctly:
+- Dropdown opens/closes properly
+- Selecting a commit updates the diff view immediately
+- Console logs show correct range change events
+- Diff content updates correctly
 
-**What Works**:
-- Backend API endpoints (`/api/commits`, `/api/base-commit`, `/api/diff`) all work correctly
-- Range picker component renders and allows commit selection
-- Range change events are properly dispatched with correct data
-- Manual API calls to fetch diff return correct results
-
-**Potential Solutions**:
-1. **Use custom events more directly**: Instead of relying on Lit property binding, have app-shell listen for range-change events and directly call a method on diff-viewer (e.g., `diffViewer.loadDiffForRange(range)`)
-
-2. **Use state management**: Implement a simple state management system (similar to Sketch's approach) where components subscribe to state changes rather than relying on Lit's property binding
-
-3. **Re-enable Shadow DOM**: Consider re-enabling Shadow DOM and fixing the CSS issues differently (though this goes against the established pattern)
-
-4. **Use `@property` instead of `@state`**: Already tried this for range-picker internal state, but may need to ensure all component properties use `@property({ attribute: false })` for proper reactivity
-
-5. **Force re-render on every range change**: In app-shell, after setting `currentRange`, also call `this.requestUpdate()` to force a full re-render of the entire app-shell and its children
-
-**Priority**: High - Range picker is visible but diff doesn't update, making the feature partially non-functional
-
-**Next Steps**:
-- Try solution #1 (direct method calls) as it's simplest and most reliable
-- If that doesn't work, implement solution #2 (state management pattern from Sketch)
-- Document the final solution for future reference
+**Files Modified**:
+- `diffreviewer/web/src/components/diff-viewer.ts` - Added `loadDiffForRange()` method
+- `diffreviewer/web/src/components/app-shell.ts` - Changed to call method directly
+- `diffreviewer/web/src/components/range-picker.ts` - Added `requestUpdate()` calls

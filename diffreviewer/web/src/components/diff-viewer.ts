@@ -91,13 +91,14 @@ export class DiffViewer extends DiffReviewerElement {
     // Don't load immediately - wait for range picker
   }
 
-  updated(changedProperties: Map<string, any>) {
-    super.updated(changedProperties);
-    
-    // Reload diff when range changes
-    if (changedProperties.has('currentRange') && this.currentRange) {
-      this.loadDiff();
-    }
+  /**
+   * Public method to load diff for a specific range.
+   * Called directly by app-shell instead of relying on property binding.
+   * This works around Lit reactivity issues when Shadow DOM is disabled.
+   */
+  public async loadDiffForRange(range: DiffRange) {
+    this.currentRange = range;
+    await this.loadDiff();
   }
 
   private async loadDiff() {
