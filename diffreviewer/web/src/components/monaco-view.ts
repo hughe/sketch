@@ -238,15 +238,27 @@ export class MonacoView extends LitElement {
     const monaco = await loadMonaco();
     if (!this.container.value || this.editor) return;
 
-    const language = this.getLanguageForFile(this.modifiedFilename || '');
+    const originalLang = this.getLanguageForFile(this.originalFilename || '');
+    const modifiedLang = this.getLanguageForFile(this.modifiedFilename || '');
+
+    // Create models with unique URIs based on timestamp to avoid conflicts
+    const timestamp = new Date().getTime();
+    const originalUri = monaco.Uri.parse(
+      `file:///original-${timestamp}.${originalLang}`
+    );
+    const modifiedUri = monaco.Uri.parse(
+      `file:///modified-${timestamp}.${modifiedLang}`
+    );
 
     this.originalModel = monaco.editor.createModel(
       this.originalCode || '',
-      language
+      originalLang,
+      originalUri
     );
     this.modifiedModel = monaco.editor.createModel(
       this.modifiedCode || '',
-      language
+      modifiedLang,
+      modifiedUri
     );
 
     this.lastSavedContent = this.modifiedCode || '';
@@ -255,14 +267,18 @@ export class MonacoView extends LitElement {
       automaticLayout: true,
       renderSideBySide: true,
       theme: this.theme === 'dark' ? 'vs-dark' : 'vs',
-      // Enable diff decorations and colors
-      renderIndicators: true,
       ignoreTrimWhitespace: false,
-      renderSideBySideInlineBreakpoint: 0,
-      originalEditable: false,
-      // Diff editor specific options
-      enableSplitViewResizing: true,
+      diffAlgorithm: 'advanced',
+      experimental: { showMoves: true },
+      glyphMargin: true,
       renderOverviewRuler: true,
+      scrollBeyondLastLine: true,
+      hideUnchangedRegions: {
+        enabled: true,
+        contextLineCount: 5,
+        minimumLineCount: 3,
+        revealLineCount: 10,
+      },
     });
 
     this.editor.setModel({

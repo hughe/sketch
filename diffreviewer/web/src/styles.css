@@ -5,6 +5,48 @@
 /* Import Monaco Editor CSS */
 @import 'monaco-editor/min/vs/editor/editor.main.css';
 
+/* Monaco Diff Editor CSS Variables */
+:root {
+  /* Diff editor colors - using more visible colors for testing */
+  --vscode-diffEditor-insertedTextBackground: rgba(155, 185, 85, 0.4) !important;
+  --vscode-diffEditor-removedTextBackground: rgba(255, 0, 0, 0.4) !important;
+  --vscode-diffEditor-insertedLineBackground: rgba(155, 185, 85, 0.2) !important;
+  --vscode-diffEditor-removedLineBackground: rgba(255, 0, 0, 0.2) !important;
+  --vscode-diffEditor-insertedTextBorder: rgba(155, 185, 85, 0.6) !important;
+  --vscode-diffEditor-removedTextBorder: rgba(255, 0, 0, 0.6) !important;
+  --vscode-diffEditorGutter-insertedLineBackground: rgba(155, 185, 85, 0.4) !important;
+  --vscode-diffEditorGutter-removedLineBackground: rgba(255, 0, 0, 0.4) !important;
+  --vscode-diffEditor-border: #ccc;
+  
+  /* Editor colors */
+  --vscode-editor-background: #ffffff;
+  --vscode-editor-foreground: #333333;
+  --vscode-editorLineNumber-foreground: #999999;
+  --vscode-editorLineNumber-activeForeground: #333333;
+  --vscode-editorGutter-background: #f5f5f5;
+}
+
+/* Force diff colors to show - debug styles */
+.monaco-editor .char-insert,
+.monaco-diff-editor .char-insert {
+  background-color: rgba(155, 185, 85, 0.4) !important;
+}
+
+.monaco-editor .line-insert,
+.monaco-diff-editor .line-insert {
+  background-color: rgba(155, 185, 85, 0.2) !important;
+}
+
+.monaco-editor .char-delete,
+.monaco-diff-editor .char-delete {
+  background-color: rgba(255, 0, 0, 0.4) !important;
+}
+
+.monaco-editor .line-delete,
+.monaco-diff-editor .line-delete {
+  background-color: rgba(255, 0, 0, 0.2) !important;
+}
+
 body {
   margin: 0;
   padding: 0;
