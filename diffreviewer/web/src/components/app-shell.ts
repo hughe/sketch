@@ -17,6 +17,7 @@ export class AppShell extends DiffReviewerElement {
   @state() private generalNotes: string = '';
   @state() private showNotesPanel: boolean = false;
   @state() private currentRange: DiffRange | null = null;
+  @state() private pendingNote: { file: string; line: number; lineContent: string } | null = null;
 
   static styles = css`
     :host {
@@ -129,9 +130,15 @@ export class AppShell extends DiffReviewerElement {
   }
 
   private handleLineClick(e: CustomEvent) {
-    // Forward to notes panel or show note creation dialog
+    // Store the pending note and show notes panel
     console.log('Line clicked:', e.detail);
+    this.pendingNote = {
+      file: e.detail.file,
+      line: e.detail.line,
+      lineContent: e.detail.lineContent,
+    };
     this.showNotesPanel = true;
+    this.requestUpdate();
   }
 
   private handleRangeChange(e: CustomEvent) {
@@ -174,6 +181,12 @@ export class AppShell extends DiffReviewerElement {
     this.loadNotes();
   }
 
+  private handleNoteCreated() {
+    // Clear pending note after it's created
+    this.pendingNote = null;
+    this.loadNotes();
+  }
+
   render() {
     return html`
       <div class="header">
@@ -208,7 +221,9 @@ export class AppShell extends DiffReviewerElement {
               <div class="notes-section">
                 <notes-panel
                   .notes=${this.notes}
+                  .pendingNote=${this.pendingNote}
                   @notes-update=${this.handleNotesUpdate}
+                  @note-created=${this.handleNoteCreated}
                 ></notes-panel>
               </div>
             `

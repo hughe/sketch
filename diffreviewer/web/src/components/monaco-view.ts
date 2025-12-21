@@ -187,12 +187,16 @@ export class MonacoView extends DiffReviewerElement {
     const modifiedEditor = this.editor.getModifiedEditor();
     if (!modifiedEditor) return;
 
-    // Listen for mouse clicks on line numbers
+    // Listen for mouse clicks on glyph margin (like Sketch does)
     modifiedEditor.onMouseDown((e) => {
-      if (e.target.type === window.monaco!.editor.MouseTargetType.GUTTER_LINE_NUMBERS) {
+      if (e.target.type === window.monaco!.editor.MouseTargetType.GUTTER_GLYPH_MARGIN) {
         const lineNumber = e.target.position?.lineNumber;
         if (lineNumber) {
           const lineContent = this.modifiedModel?.getLineContent(lineNumber) || '';
+          
+          // Prevent default Monaco behavior
+          e.event.preventDefault();
+          e.event.stopPropagation();
           
           const event = new CustomEvent('line-click', {
             detail: {
