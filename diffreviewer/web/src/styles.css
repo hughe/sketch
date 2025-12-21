@@ -2,6 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Import Monaco Editor CSS */
+@import 'monaco-editor/min/vs/editor/editor.main.css';
+
 body {
   margin: 0;
   padding: 0;

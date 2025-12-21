@@ -62,6 +62,12 @@ export class MonacoView extends LitElement {
       height: 100%;
     }
 
+    /* Ensure Monaco diff colors are visible */
+    :host ::part(container) {
+      --vscode-diffEditor-insertedTextBackground: rgba(155, 185, 85, 0.2);
+      --vscode-diffEditor-removedTextBackground: rgba(255, 0, 0, 0.2);
+    }
+
     .save-indicator {
       position: absolute;
       top: 8px;
@@ -247,13 +253,16 @@ export class MonacoView extends LitElement {
 
     this.editor = monaco.editor.createDiffEditor(this.container.value, {
       automaticLayout: true,
-      readOnly: false,
       renderSideBySide: true,
       theme: this.theme === 'dark' ? 'vs-dark' : 'vs',
-      glyphMargin: true,
-      lineNumbers: 'on',
-      scrollBeyondLastLine: false,
-      minimap: { enabled: true },
+      // Enable diff decorations and colors
+      renderIndicators: true,
+      ignoreTrimWhitespace: false,
+      renderSideBySideInlineBreakpoint: 0,
+      originalEditable: false,
+      // Diff editor specific options
+      enableSplitViewResizing: true,
+      renderOverviewRuler: true,
     });
 
     this.editor.setModel({
@@ -261,9 +270,30 @@ export class MonacoView extends LitElement {
       modified: this.modifiedModel,
     });
 
+    // Configure both editors explicitly
     const modifiedEditor = this.editor.getModifiedEditor();
+    const originalEditor = this.editor.getOriginalEditor();
+    
+    const editorOptions = {
+      lineNumbers: 'on' as const,
+      glyphMargin: true,
+      folding: true,
+      scrollBeyondLastLine: false,
+      minimap: { enabled: true },
+      fontSize: 14,
+      renderWhitespace: 'selection' as const,
+    };
+    
+    if (originalEditor) {
+      originalEditor.updateOptions({
+        ...editorOptions,
+        readOnly: true,
+      });
+    }
+    
     if (modifiedEditor) {
       modifiedEditor.updateOptions({
+        ...editorOptions,
         readOnly: !this.editableRight,
       });
 

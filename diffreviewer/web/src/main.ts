@@ -1,4 +1,5 @@
 import './styles.css';
+import 'monaco-editor/min/vs/editor/editor.main.css';
 import './components/app-shell';
 
 // App initialization
