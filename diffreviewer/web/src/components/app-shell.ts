@@ -85,7 +85,7 @@ export class AppShell extends DiffReviewerElement {
     }
   }
 
-  private handleNoteAdded(e: CustomEvent) {
+  private async handleNoteAdded(e: CustomEvent) {
     // When a note is added from monaco-view, append it to general notes
     const { formattedNote } = e.detail;
     console.log('Note added:', formattedNote);
@@ -98,6 +98,13 @@ export class AppShell extends DiffReviewerElement {
     }
     
     this.requestUpdate();
+    
+    // Save to backend immediately
+    try {
+      await updateGeneralNotes(this.generalNotes);
+    } catch (err) {
+      console.error('Error saving note to backend:', err);
+    }
   }
 
   private handleRangeChange(e: CustomEvent) {
