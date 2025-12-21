@@ -22,8 +22,9 @@ type DiffFile struct {
 
 // GetDiff returns a structured representation of the Git diff between two branches
 func GetDiff(repoDir, from, to string) ([]DiffFile, error) {
-	rawCmd := exec.Command("git", "-C", repoDir, "diff", "--raw", "--abbrev=40", "-M", "-C", "--find-copies-harder", from, to)
-	numstatCmd := exec.Command("git", "-C", repoDir, "diff", "--numstat", from, to)
+	// Use "--" to separate revisions from paths to avoid ambiguity
+	rawCmd := exec.Command("git", "-C", repoDir, "diff", "--raw", "--abbrev=40", "-M", "-C", "--find-copies-harder", from, to, "--")
+	numstatCmd := exec.Command("git", "-C", repoDir, "diff", "--numstat", from, to, "--")
 
 	rawOut, err := rawCmd.CombinedOutput()
 	if err != nil {

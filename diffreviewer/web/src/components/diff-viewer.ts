@@ -133,6 +133,7 @@ export class DiffViewer extends LitElement {
   private async handleFileChange(e: Event) {
     const select = e.target as HTMLSelectElement;
     this.selectedFile = select.value;
+    this.requestUpdate();
 
     const file = this.files.find((f) => f.path === this.selectedFile);
     if (file) {
