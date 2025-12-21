@@ -1,10 +1,11 @@
-import { html, css, LitElement } from 'lit';
+import { html, css } from 'lit';
+import { BaseElement } from './base-element.js';
 import { customElement, property } from 'lit/decorators.js';
 import { deleteNote } from '../services/notes';
 import type { Note } from '../types';
 
 @customElement('notes-panel')
-export class NotesPanel extends LitElement {
+export class NotesPanel extends BaseElement {
   @property({ type: Array }) notes: Note[] = [];
 
   static styles = css`

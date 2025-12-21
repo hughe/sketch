@@ -1,4 +1,5 @@
-import { html, css, LitElement } from 'lit';
+import { html, css } from 'lit';
+import { BaseElement } from './base-element.js';
 import { customElement, state } from 'lit/decorators.js';
 import { fetchNotes, updateGeneralNotes } from '../services/notes';
 import { shutdown } from '../services/api';
@@ -9,7 +10,7 @@ import './general-notes-input';
 import './done-button';
 
 @customElement('app-shell')
-export class AppShell extends LitElement {
+export class AppShell extends BaseElement {
   @state() private notes: Note[] = [];
   @state() private generalNotes: string = '';
   @state() private showNotesPanel: boolean = false;

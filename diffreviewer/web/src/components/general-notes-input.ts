@@ -1,8 +1,9 @@
-import { html, css, LitElement } from 'lit';
+import { html, css } from 'lit';
+import { BaseElement } from './base-element.js';
 import { customElement, property } from 'lit/decorators.js';
 
 @customElement('general-notes-input')
-export class GeneralNotesInput extends LitElement {
+export class GeneralNotesInput extends BaseElement {
   @property({ type: String }) value = '';
 
   private debounceTimeout: number | null = null;

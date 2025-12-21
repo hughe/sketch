@@ -1,8 +1,9 @@
-import { html, css, LitElement } from 'lit';
+import { html, css } from 'lit';
+import { BaseElement } from './base-element.js';
 import { customElement } from 'lit/decorators.js';
 
 @customElement('done-button')
-export class DoneButton extends LitElement {
+export class DoneButton extends BaseElement {
   static styles = css`
     button {
       padding: 0.5rem 1.5rem;

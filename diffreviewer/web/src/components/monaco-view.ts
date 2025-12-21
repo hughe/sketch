@@ -1,4 +1,5 @@
-import { html, css, LitElement } from 'lit';
+import { html, css } from 'lit';
+import { BaseElement } from './base-element.js';
 import { customElement, property, state } from 'lit/decorators.js';
 import { createRef, Ref, ref } from 'lit/directives/ref.js';
 import type * as monaco from 'monaco-editor';
@@ -30,7 +31,7 @@ function loadMonaco(): Promise<typeof monaco> {
 }
 
 @customElement('monaco-view')
-export class MonacoView extends LitElement {
+export class MonacoView extends BaseElement {
   @property({ type: Boolean, attribute: 'editable-right' })
   editableRight = true;
 
@@ -60,38 +61,6 @@ export class MonacoView extends LitElement {
     .monaco-container {
       width: 100%;
       height: 100%;
-    }
-
-    /* Monaco diff colors - must be in shadow DOM */
-    .monaco-editor .char-insert {
-      background-color: rgba(155, 185, 85, 0.4) !important;
-    }
-    
-    .monaco-editor .char-delete {
-      background-color: rgba(255, 0, 0, 0.4) !important;
-    }
-    
-    .monaco-editor .line-insert {
-      background-color: rgba(155, 185, 85, 0.2) !important;
-    }
-    
-    .monaco-editor .line-delete {
-      background-color: rgba(255, 0, 0, 0.2) !important;
-    }
-
-    /* Line numbers and gutter visibility */
-    .monaco-editor .margin,
-    .monaco-editor .glyph-margin {
-      background-color: #f5f5f5 !important;
-    }
-    
-    .monaco-editor .margin-view-overlays .line-numbers {
-      color: #237893 !important;
-      font-weight: 600 !important;
-    }
-    
-    .monaco-editor .margin-view-overlays .line-numbers.active-line-number {
-      color: #0B216F !important;
     }
 
     .save-indicator {
