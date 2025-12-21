@@ -326,15 +326,20 @@ export class MonacoView extends DiffReviewerElement {
     const modifiedEditor = this.editor.getModifiedEditor();
     if (!modifiedEditor) return;
 
-    // Calculate position for the note box
+    // Get the position of the line in the editor
     const lineTop = modifiedEditor.getTopForLineNumber(lineNumber);
+    const scrollTop = modifiedEditor.getScrollTop();
     const containerRect = this.container.value?.getBoundingClientRect();
     
     if (containerRect) {
+      // Calculate the actual screen position of the line
+      const lineScreenTop = containerRect.top + lineTop - scrollTop;
+      
       // Position the box to the right of the editor, aligned with the line
+      // Add some offset to avoid covering the line
       this.noteBoxPosition = {
-        top: containerRect.top + lineTop + 20,
-        left: containerRect.left + containerRect.width / 2,
+        top: Math.max(lineScreenTop, containerRect.top + 50), // Don't go above the container
+        left: containerRect.left + containerRect.width - 550, // Position near right edge
       };
     }
 
@@ -342,6 +347,14 @@ export class MonacoView extends DiffReviewerElement {
     this.noteText = '';
     this.showNoteBox = true;
     this.requestUpdate();
+    
+    // Focus the textarea after render
+    setTimeout(() => {
+      const textarea = this.renderRoot.querySelector('.note-textarea') as HTMLTextAreaElement;
+      if (textarea) {
+        textarea.focus();
+      }
+    }, 0);
   }
 
   private closeNoteBox() {
