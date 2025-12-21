@@ -3,9 +3,7 @@ import { DiffReviewerElement } from './diffreviewer-element.js';
 import { customElement, state } from 'lit/decorators.js';
 import { fetchNotes, updateGeneralNotes } from '../services/notes';
 import { shutdown } from '../services/api';
-import type { Note } from '../types';
 import './diff-viewer';
-import './notes-panel';
 import './general-notes-input';
 import './done-button';
 import './range-picker';
@@ -13,11 +11,8 @@ import type { DiffRange } from './range-picker';
 
 @customElement('app-shell')
 export class AppShell extends DiffReviewerElement {
-  @state() private notes: Note[] = [];
   @state() private generalNotes: string = '';
-  @state() private showNotesPanel: boolean = false;
   @state() private currentRange: DiffRange | null = null;
-  @state() private pendingNote: { file: string; line: number; lineContent: string } | null = null;
 
   static styles = css`
     :host {
@@ -50,24 +45,7 @@ export class AppShell extends DiffReviewerElement {
       align-items: center;
     }
 
-    .notes-toggle {
-      padding: 0.5rem 1rem;
-      background: #f3f4f6;
-      border: 1px solid #d1d5db;
-      border-radius: 0.375rem;
-      cursor: pointer;
-      font-size: 0.875rem;
-    }
 
-    .notes-toggle:hover {
-      background: #e5e7eb;
-    }
-
-    .notes-toggle.active {
-      background: #3b82f6;
-      color: white;
-      border-color: #3b82f6;
-    }
 
     .main-content {
       display: flex;
@@ -82,12 +60,7 @@ export class AppShell extends DiffReviewerElement {
       overflow: hidden;
     }
 
-    .notes-section {
-      width: 350px;
-      border-left: 1px solid #e5e7eb;
-      background: #f9fafb;
-      flex-shrink: 0;
-    }
+
 
     .general-notes-section {
       border-top: 1px solid #e5e7eb;
@@ -95,49 +68,35 @@ export class AppShell extends DiffReviewerElement {
       flex-shrink: 0;
     }
 
-    @media (max-width: 768px) {
-      .notes-section {
-        position: absolute;
-        right: 0;
-        top: 0;
-        bottom: 0;
-        width: 100%;
-        max-width: 400px;
-        z-index: 10;
-        box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1);
-      }
-    }
+
   `;
 
   async connectedCallback() {
     super.connectedCallback();
-    await this.loadNotes();
+    await this.loadGeneralNotes();
   }
 
-  private async loadNotes() {
+  private async loadGeneralNotes() {
     try {
       const notesResponse = await fetchNotes();
-      this.notes = notesResponse.lineNotes;
       this.generalNotes = notesResponse.generalNotes;
     } catch (err) {
       console.error('Error loading notes:', err);
     }
   }
 
-  private toggleNotesPanel() {
-    this.showNotesPanel = !this.showNotesPanel;
-    this.requestUpdate();
-  }
-
-  private handleLineClick(e: CustomEvent) {
-    // Store the pending note and show notes panel
-    console.log('Line clicked:', e.detail);
-    this.pendingNote = {
-      file: e.detail.file,
-      line: e.detail.line,
-      lineContent: e.detail.lineContent,
-    };
-    this.showNotesPanel = true;
+  private handleNoteAdded(e: CustomEvent) {
+    // When a note is added from monaco-view, append it to general notes
+    const { formattedNote } = e.detail;
+    console.log('Note added:', formattedNote);
+    
+    // Append to general notes with a newline separator
+    if (this.generalNotes.trim()) {
+      this.generalNotes += '\n\n' + formattedNote;
+    } else {
+      this.generalNotes = formattedNote;
+    }
+    
     this.requestUpdate();
   }
 
@@ -168,6 +127,8 @@ export class AppShell extends DiffReviewerElement {
     }
 
     try {
+      // Save general notes to server before shutdown
+      await updateGeneralNotes(this.generalNotes);
       await shutdown(this.generalNotes);
       // Show shutting down message
       document.body.innerHTML =
@@ -177,28 +138,11 @@ export class AppShell extends DiffReviewerElement {
     }
   }
 
-  private handleNotesUpdate() {
-    this.loadNotes();
-  }
-
-  private handleNoteCreated() {
-    // Clear pending note after it's created
-    this.pendingNote = null;
-    this.loadNotes();
-  }
-
   render() {
     return html`
       <div class="header">
         <div class="title">DiffReviewer</div>
         <div class="header-actions">
-          <button
-            class="notes-toggle ${this.showNotesPanel ? 'active' : ''}"
-            @click=${this.toggleNotesPanel}
-          >
-            ${this.showNotesPanel ? 'Hide' : 'Show'} Notes
-            ${this.notes.length > 0 ? `(${this.notes.length})` : ''}
-          </button>
           <done-button @done=${this.handleDone}></done-button>
         </div>
       </div>
@@ -207,7 +151,7 @@ export class AppShell extends DiffReviewerElement {
           <range-picker @range-change=${this.handleRangeChange}></range-picker>
           <diff-viewer
             .currentRange=${this.currentRange}
-            @line-click=${this.handleLineClick}
+            @note-added=${this.handleNoteAdded}
           ></diff-viewer>
           <div class="general-notes-section">
             <general-notes-input
@@ -216,18 +160,6 @@ export class AppShell extends DiffReviewerElement {
             ></general-notes-input>
           </div>
         </div>
-        ${this.showNotesPanel
-          ? html`
-              <div class="notes-section">
-                <notes-panel
-                  .notes=${this.notes}
-                  .pendingNote=${this.pendingNote}
-                  @notes-update=${this.handleNotesUpdate}
-                  @note-created=${this.handleNoteCreated}
-                ></notes-panel>
-              </div>
-            `
-          : ''}
       </div>
     `;
   }

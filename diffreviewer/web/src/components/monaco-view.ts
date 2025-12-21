@@ -43,6 +43,10 @@ export class MonacoView extends DiffReviewerElement {
 
   @state() private saveState: 'idle' | 'modified' | 'saving' | 'saved' = 'idle';
   @state() private lastSavedContent: string = '';
+  @state() private showNoteBox: boolean = false;
+  @state() private noteText: string = '';
+  @state() private noteBoxPosition: { top: number; left: number } = { top: 0, left: 0 };
+  @state() private clickedLine: { line: number; lineContent: string } | null = null;
 
   private container: Ref<HTMLElement> = createRef();
   private editor?: monaco.editor.IStandaloneDiffEditor;
@@ -96,6 +100,117 @@ export class MonacoView extends DiffReviewerElement {
 
     .comment-glyph:hover {
       opacity: 1;
+    }
+
+    .note-box {
+      position: fixed;
+      background: white;
+      border: 1px solid #d1d5db;
+      border-radius: 0.375rem;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      padding: 0.75rem;
+      z-index: 10001;
+      width: 500px;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+
+    .note-box-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+
+    .note-box-title {
+      margin: 0;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: #111827;
+    }
+
+    .note-box-close {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.25rem;
+      color: #6b7280;
+      padding: 0;
+      width: 1.5rem;
+      height: 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .note-box-close:hover {
+      color: #111827;
+    }
+
+    .note-line-preview {
+      background: #f3f4f6;
+      border: 1px solid #e5e7eb;
+      border-radius: 0.25rem;
+      padding: 0.5rem;
+      margin-bottom: 0.5rem;
+      font-family: monospace;
+      font-size: 0.75rem;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    .note-textarea {
+      width: 100%;
+      min-height: 80px;
+      padding: 0.5rem;
+      border: 1px solid #d1d5db;
+      border-radius: 0.25rem;
+      resize: vertical;
+      font-family: inherit;
+      font-size: 0.875rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .note-textarea:focus {
+      outline: none;
+      border-color: #3b82f6;
+      ring: 2px;
+      ring-color: rgba(59, 130, 246, 0.5);
+    }
+
+    .note-box-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.5rem;
+    }
+
+    .note-btn {
+      padding: 0.375rem 0.75rem;
+      border-radius: 0.25rem;
+      cursor: pointer;
+      font-size: 0.75rem;
+      font-weight: 500;
+      border: none;
+    }
+
+    .note-btn-primary {
+      background: #2563eb;
+      color: white;
+    }
+
+    .note-btn-primary:hover {
+      background: #1d4ed8;
+    }
+
+    .note-btn-secondary {
+      background: white;
+      color: #374151;
+      border: 1px solid #d1d5db;
+    }
+
+    .note-btn-secondary:hover {
+      background: #f3f4f6;
     }
   `;
 
@@ -198,20 +313,88 @@ export class MonacoView extends DiffReviewerElement {
           e.event.preventDefault();
           e.event.stopPropagation();
           
-          const event = new CustomEvent('line-click', {
-            detail: {
-              line: lineNumber,
-              lineContent,
-              file: this.modifiedFilename,
-            },
-            bubbles: true,
-            composed: true,
-          });
-          
-          this.dispatchEvent(event);
+          // Show the inline note box
+          this.showNoteBoxForLine(lineNumber, lineContent);
         }
       }
     });
+  }
+
+  private showNoteBoxForLine(lineNumber: number, lineContent: string) {
+    if (!this.editor) return;
+
+    const modifiedEditor = this.editor.getModifiedEditor();
+    if (!modifiedEditor) return;
+
+    // Calculate position for the note box
+    const lineTop = modifiedEditor.getTopForLineNumber(lineNumber);
+    const containerRect = this.container.value?.getBoundingClientRect();
+    
+    if (containerRect) {
+      // Position the box to the right of the editor, aligned with the line
+      this.noteBoxPosition = {
+        top: containerRect.top + lineTop + 20,
+        left: containerRect.left + containerRect.width / 2,
+      };
+    }
+
+    this.clickedLine = { line: lineNumber, lineContent };
+    this.noteText = '';
+    this.showNoteBox = true;
+    this.requestUpdate();
+  }
+
+  private closeNoteBox() {
+    this.showNoteBox = false;
+    this.noteText = '';
+    this.clickedLine = null;
+    this.requestUpdate();
+  }
+
+  private handleNoteInput(e: Event) {
+    const target = e.target as HTMLTextAreaElement;
+    this.noteText = target.value;
+    this.requestUpdate();
+  }
+
+  private handleNoteKeyDown(e: KeyboardEvent) {
+    // Save on Enter (but allow Shift+Enter for new lines)
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      if (this.noteText.trim()) {
+        this.submitNote();
+      }
+    }
+  }
+
+  private submitNote() {
+    if (!this.clickedLine || !this.noteText.trim()) {
+      return;
+    }
+
+    // Format the note similar to Sketch
+    const lineInfo = `Line ${this.clickedLine.line}`;
+    const formattedNote = `**${this.modifiedFilename}** (${lineInfo}):\n\`\`\`\n${this.clickedLine.lineContent}\n\`\`\`\n${this.noteText.trim()}`;
+
+    console.log('Submitting note:', formattedNote);
+
+    // Close the note box
+    this.closeNoteBox();
+
+    // Dispatch event to add note to general notes
+    const event = new CustomEvent('note-added', {
+      detail: {
+        file: this.modifiedFilename,
+        line: this.clickedLine.line,
+        lineContent: this.clickedLine.lineContent,
+        noteText: this.noteText.trim(),
+        formattedNote,
+      },
+      bubbles: true,
+      composed: true,
+    });
+
+    this.dispatchEvent(event);
   }
 
   public updateNoteDecorations(linesWithNotes: number[]) {
@@ -384,6 +567,36 @@ export class MonacoView extends DiffReviewerElement {
           `
         : ''}
       <div class="monaco-container" ${ref(this.container)}></div>
+      ${this.showNoteBox && this.clickedLine
+        ? html`
+            <div
+              class="note-box"
+              style="top: ${this.noteBoxPosition.top}px; left: ${this.noteBoxPosition.left}px;"
+            >
+              <div class="note-box-header">
+                <h3 class="note-box-title">Add note</h3>
+                <button class="note-box-close" @click=${this.closeNoteBox}>×</button>
+              </div>
+              <div class="note-line-preview">${this.clickedLine.lineContent}</div>
+              <textarea
+                class="note-textarea"
+                placeholder="Type your note here... (Press Enter to save, Shift+Enter for new line)"
+                .value=${this.noteText}
+                @input=${this.handleNoteInput}
+                @keydown=${this.handleNoteKeyDown}
+                autofocus
+              ></textarea>
+              <div class="note-box-actions">
+                <button class="note-btn note-btn-secondary" @click=${this.closeNoteBox}>
+                  Cancel
+                </button>
+                <button class="note-btn note-btn-primary" @click=${this.submitNote}>
+                  Add
+                </button>
+              </div>
+            </div>
+          `
+        : ''}
     `;
   }
 }

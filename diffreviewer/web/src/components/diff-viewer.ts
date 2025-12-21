@@ -197,9 +197,9 @@ export class DiffViewer extends DiffReviewerElement {
     }
   }
 
-  private handleLineClick(e: CustomEvent) {
-    // Forward line click events to parent
-    const event = new CustomEvent('line-click', {
+  private handleNoteAdded(e: CustomEvent) {
+    // Forward note-added events to parent
+    const event = new CustomEvent('note-added', {
       detail: e.detail,
       bubbles: true,
       composed: true,
@@ -273,7 +273,7 @@ export class DiffViewer extends DiffReviewerElement {
                 .modifiedFilename=${currentFile?.path || ''}
                 .editableRight=${true}
                 @monaco-save=${this.handleMonacoSave}
-                @line-click=${this.handleLineClick}
+                @note-added=${this.handleNoteAdded}
               ></monaco-view>
             `
           : html`<div class="loading">Loading file...</div>`}
