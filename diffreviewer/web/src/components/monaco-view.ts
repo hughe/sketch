@@ -62,10 +62,21 @@ export class MonacoView extends LitElement {
       height: 100%;
     }
 
-    /* Ensure Monaco diff colors are visible */
-    :host ::part(container) {
-      --vscode-diffEditor-insertedTextBackground: rgba(155, 185, 85, 0.2);
-      --vscode-diffEditor-removedTextBackground: rgba(255, 0, 0, 0.2);
+    /* Monaco diff colors - must be in shadow DOM */
+    .monaco-editor .char-insert {
+      background-color: rgba(155, 185, 85, 0.4) !important;
+    }
+    
+    .monaco-editor .char-delete {
+      background-color: rgba(255, 0, 0, 0.4) !important;
+    }
+    
+    .monaco-editor .line-insert {
+      background-color: rgba(155, 185, 85, 0.2) !important;
+    }
+    
+    .monaco-editor .line-delete {
+      background-color: rgba(255, 0, 0, 0.2) !important;
     }
 
     .save-indicator {
