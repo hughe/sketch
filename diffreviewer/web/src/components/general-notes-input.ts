@@ -1,9 +1,9 @@
 import { html, css } from 'lit';
-import { BaseElement } from './base-element.js';
+import { DiffReviewerElement } from './diffreviewer-element.js';
 import { customElement, property } from 'lit/decorators.js';
 
 @customElement('general-notes-input')
-export class GeneralNotesInput extends BaseElement {
+export class GeneralNotesInput extends DiffReviewerElement {
   @property({ type: String }) value = '';
 
   private debounceTimeout: number | null = null;

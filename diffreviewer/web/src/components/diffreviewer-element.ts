@@ -5,7 +5,7 @@ import { LitElement } from 'lit';
  * This allows document-level CSS (including Monaco Editor styles) to reach
  * elements inside the component, similar to Sketch's SketchTailwindElement.
  */
-export class BaseElement extends LitElement {
+export class DiffReviewerElement extends LitElement {
   createRenderRoot() {
     return this;
   }

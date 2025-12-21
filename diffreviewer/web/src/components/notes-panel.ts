@@ -1,11 +1,11 @@
 import { html, css } from 'lit';
-import { BaseElement } from './base-element.js';
+import { DiffReviewerElement } from './diffreviewer-element.js';
 import { customElement, property } from 'lit/decorators.js';
 import { deleteNote } from '../services/notes';
 import type { Note } from '../types';
 
 @customElement('notes-panel')
-export class NotesPanel extends BaseElement {
+export class NotesPanel extends DiffReviewerElement {
   @property({ type: Array }) notes: Note[] = [];
 
   static styles = css`

@@ -1,9 +1,9 @@
 import { html, css } from 'lit';
-import { BaseElement } from './base-element.js';
+import { DiffReviewerElement } from './diffreviewer-element.js';
 import { customElement } from 'lit/decorators.js';
 
 @customElement('done-button')
-export class DoneButton extends BaseElement {
+export class DoneButton extends DiffReviewerElement {
   static styles = css`
     button {
       padding: 0.5rem 1.5rem;

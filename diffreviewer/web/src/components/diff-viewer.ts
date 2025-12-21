@@ -1,12 +1,12 @@
 import { html, css } from 'lit';
-import { BaseElement } from './base-element.js';
+import { DiffReviewerElement } from './diffreviewer-element.js';
 import { customElement, state } from 'lit/decorators.js';
 import { DiffFile } from '../types';
 import { fetchDiff, fetchFileContent, saveFileContent } from '../services/api';
 import './monaco-view';
 
 @customElement('diff-viewer')
-export class DiffViewer extends BaseElement {
+export class DiffViewer extends DiffReviewerElement {
   @state() private files: DiffFile[] = [];
   @state() private selectedFile: string = '';
   @state() private loading: boolean = true;

@@ -1,5 +1,5 @@
 import { html, css } from 'lit';
-import { BaseElement } from './base-element.js';
+import { DiffReviewerElement } from './diffreviewer-element.js';
 import { customElement, state } from 'lit/decorators.js';
 import { fetchNotes, updateGeneralNotes } from '../services/notes';
 import { shutdown } from '../services/api';
@@ -10,7 +10,7 @@ import './general-notes-input';
 import './done-button';
 
 @customElement('app-shell')
-export class AppShell extends BaseElement {
+export class AppShell extends DiffReviewerElement {
   @state() private notes: Note[] = [];
   @state() private generalNotes: string = '';
   @state() private showNotesPanel: boolean = false;

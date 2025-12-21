@@ -1,5 +1,5 @@
 import { html, css } from 'lit';
-import { BaseElement } from './base-element.js';
+import { DiffReviewerElement } from './diffreviewer-element.js';
 import { customElement, property, state } from 'lit/decorators.js';
 import { createRef, Ref, ref } from 'lit/directives/ref.js';
 import type * as monaco from 'monaco-editor';
@@ -31,7 +31,7 @@ function loadMonaco(): Promise<typeof monaco> {
 }
 
 @customElement('monaco-view')
-export class MonacoView extends BaseElement {
+export class MonacoView extends DiffReviewerElement {
   @property({ type: Boolean, attribute: 'editable-right' })
   editableRight = true;
 
