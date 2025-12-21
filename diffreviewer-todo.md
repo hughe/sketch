@@ -638,3 +638,30 @@ Set `cssCodeSplit: false` in `web/vite.config.ts` to disable CSS code splitting.
 - Single CSS file now generated (`style-*.css` instead of `main-*.css` + `editor-*.css`)
 - Monaco Editor renders correctly with line numbers and syntax highlighting
 - All Monaco CSS styles properly applied
+
+## CSS Shadow DOM Fix (Dec 21, 2025 - RESOLVED)
+
+### Final Solution
+The Monaco Editor CSS was loading but not applying inside the Lit web component's shadow DOM. CSS defined at the document level doesn't penetrate shadow boundaries.
+
+### Fix Applied
+1. **Vite Config**: Set `cssCodeSplit: false` to bundle all CSS into one file
+2. **Shadow DOM Styles**: Added Monaco diff color CSS rules directly to the `monaco-view` component's `static styles` property:
+   - `.monaco-editor .char-insert` - green background for inserted characters
+   - `.monaco-editor .char-delete` - red background for deleted characters  
+   - `.monaco-editor .line-insert` - light green background for inserted lines
+   - `.monaco-editor .line-delete` - light red background for deleted lines
+
+### Result
+✅ Monaco Editor renders correctly with:
+- Proper diff highlighting (red for deletions, green for insertions)
+- Side-by-side diff view working
+- Line numbers visible (Monaco generates these dynamically)
+- All Monaco CSS properly styled within shadow DOM
+
+### Files Modified
+- `diffreviewer/web/vite.config.ts` - disabled CSS code splitting
+- `diffreviewer/web/src/components/monaco-view.ts` - added diff color styles to component
+
+### Verification
+Tested with test repository comparing two commits - diff colors display correctly.
