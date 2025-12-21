@@ -641,27 +641,60 @@ Set `cssCodeSplit: false` in `web/vite.config.ts` to disable CSS code splitting.
 
 ## CSS Shadow DOM Fix (Dec 21, 2025 - RESOLVED)
 
-### Final Solution
-The Monaco Editor CSS was loading but not applying inside the Lit web component's shadow DOM. CSS defined at the document level doesn't penetrate shadow boundaries.
+### Problem
+Monaco Editor CSS issues:
+1. Diff highlighting colors were appearing in wrong positions (offset by lines)
+2. Line numbers were not visible
+3. CSS from the bundled stylesheet couldn't reach Monaco elements inside shadow DOM
 
-### Fix Applied
-1. **Vite Config**: Set `cssCodeSplit: false` to bundle all CSS into one file
-2. **Shadow DOM Styles**: Added Monaco diff color CSS rules directly to the `monaco-view` component's `static styles` property:
-   - `.monaco-editor .char-insert` - green background for inserted characters
-   - `.monaco-editor .char-delete` - red background for deleted characters  
-   - `.monaco-editor .line-insert` - light green background for inserted lines
-   - `.monaco-editor .line-delete` - light red background for deleted lines
+### Root Cause
+Lit components use Shadow DOM by default, which creates a CSS boundary. Document-level CSS (including Monaco Editor styles) cannot penetrate into shadow DOM to style elements inside components.
+
+### Solution: Disable Shadow DOM (Same as Sketch)
+Followed Sketch's approach by disabling Shadow DOM for all Lit components:
+
+1. **Created `BaseElement` class** (like Sketch's `SketchTailwindElement`):
+   - Extends `LitElement`
+   - Overrides `createRenderRoot()` to return `this` instead of creating shadow root
+   - Allows document-level CSS to reach component internals
+
+2. **Updated all components** to extend `BaseElement` instead of `LitElement`:
+   - `app-shell.ts`
+   - `diff-viewer.ts`
+   - `monaco-view.ts`
+   - `done-button.ts`
+   - `general-notes-input.ts`
+   - `notes-panel.ts`
+
+3. **Moved component styles to global CSS**:
+   - When Shadow DOM is disabled, Lit's `static styles` no longer apply
+   - Moved all component layout and styling rules to `web/src/styles.css`
+   - Added component-scoped selectors (e.g., `app-shell .header`, `diff-viewer .file-selector`)
 
 ### Result
 ✅ Monaco Editor renders correctly with:
-- Proper diff highlighting (red for deletions, green for insertions)
-- Side-by-side diff view working
-- Line numbers visible (Monaco generates these dynamically)
-- All Monaco CSS properly styled within shadow DOM
+- **Diff colors in correct positions** - no offset issues
+- **Line numbers visible** - styled with teal color (#237893)
+- **Character-level diffs** - darker green on word "Changed" (rgba(155, 185, 85, 0.4))
+- **Line-level diffs** - lighter green on full line (rgba(155, 185, 85, 0.2))
+- **Proper layout** - all components have correct heights and flexbox behavior
 
 ### Files Modified
-- `diffreviewer/web/vite.config.ts` - disabled CSS code splitting
-- `diffreviewer/web/src/components/monaco-view.ts` - added diff color styles to component
+- `diffreviewer/web/src/components/base-element.ts` - new base class (created)
+- `diffreviewer/web/src/components/*.ts` - all components updated to extend BaseElement
+- `diffreviewer/web/src/styles.css` - added all component styles with proper scoping
+- `diffreviewer/web/vite.config.ts` - still has `cssCodeSplit: false` from earlier fix
+
+### Why This Approach?
+- **Consistency with Sketch**: Uses the same pattern Sketch uses for Tailwind integration
+- **Simpler CSS**: No need to work around shadow boundaries
+- **Monaco CSS works**: Document-level Monaco styles now reach editor elements
+- **No CSS isolation needed**: DiffReviewer controls entire UI, doesn't need component encapsulation
 
 ### Verification
-Tested with test repository comparing two commits - diff colors display correctly.
+Tested with test repository comparing two commits:
+- Diff colors appear on correct lines (no offset)
+- Word "Changed" has darker green background
+- Full line has lighter green background
+- Line numbers visible with proper styling
+- Layout renders correctly at full viewport height
