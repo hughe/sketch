@@ -619,3 +619,22 @@ Trigger graceful shutdown
 5. Document usage in README
 
 See `TESTING_NOTES.md` for detailed testing information.
+
+## Recent Fix - Monaco CSS Not Loading (Dec 21, 2025)
+
+### Problem
+Monaco Editor was not rendering properly - no line numbers, no syntax highlighting, and broken layout. Investigation revealed that Vite was code-splitting the Monaco CSS (`monaco-editor/min/vs/editor/editor.main.css`) into a separate file (`editor-CLTksHtb.css`) that was not being referenced in the HTML.
+
+### Root Cause
+Vite's default behavior is to code-split CSS for dynamic imports. When Monaco Editor CSS was imported, it was extracted into a separate bundle that was built but not linked in the generated `index.html`.
+
+### Solution
+Set `cssCodeSplit: false` in `web/vite.config.ts` to disable CSS code splitting. This ensures all CSS (including Monaco's) is bundled into a single file that's properly linked in the HTML.
+
+### Files Changed
+- `diffreviewer/web/vite.config.ts`: Added `cssCodeSplit: false` to build config
+
+### Verification
+- Single CSS file now generated (`style-*.css` instead of `main-*.css` + `editor-*.css`)
+- Monaco Editor renders correctly with line numbers and syntax highlighting
+- All Monaco CSS styles properly applied
