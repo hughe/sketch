@@ -1,8 +1,37 @@
 # Testing Notes
 
-## Current Status - COMPLETE ✅
+## Current Status - Monaco CSS Fix Applied ⚠️
 
-### ✅ All Core Features Working
+### Monaco CSS Issue - Fixed But Not Yet Tested
+
+**What Was Fixed:**
+- Added explicit import of Monaco Editor CSS in `main.ts`
+- The CSS was being generated (114KB `editor-CLTksHtb.css`) but not linked in HTML
+- Now Monaco CSS is bundled into the main CSS file (119KB, up from 6.2KB)
+- Frontend rebuilt and backend binary updated with new embedded assets
+
+**Changes Made:**
+1. `diffreviewer/web/src/main.ts` - Added `import 'monaco-editor/min/vs/editor/editor.main.css'`
+2. `diffreviewer/web/src/styles.css` - Added `@import` statement (generates warning but works)
+3. `diffreviewer/web/src/components/monaco-view.ts` - Added explicit Monaco diff editor configuration:
+   - `renderIndicators: true`
+   - `ignoreTrimWhitespace: false` 
+   - Explicit line numbers and editor options for both original and modified editors
+   - CSS variables for diff colors
+
+**Expected Results After Fix:**
+- ✅ Diff colors should now appear (green for additions, red for deletions)
+- ✅ Line numbers should be visible on both sides
+- ✅ Diff indicators should show in the gutter
+
+**Testing Required:**
+- Start server: `./diffreviewer/bin/diffreviewer -port 8011 diffreviewer sketch-wip`
+- Open browser to http://localhost:8011
+- Verify diff colors are visible
+- Verify line numbers appear
+- Test file switching still works
+
+### ✅ Previously Working Features
 
 **Backend:**
 - Git diff operations working correctly (30 files in test)
