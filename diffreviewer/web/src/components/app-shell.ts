@@ -8,12 +8,15 @@ import './diff-viewer';
 import './notes-panel';
 import './general-notes-input';
 import './done-button';
+import './range-picker';
+import type { DiffRange } from './range-picker';
 
 @customElement('app-shell')
 export class AppShell extends DiffReviewerElement {
   @state() private notes: Note[] = [];
   @state() private generalNotes: string = '';
   @state() private showNotesPanel: boolean = false;
+  @state() private currentRange: DiffRange | null = null;
 
   static styles = css`
     :host {
@@ -131,6 +134,18 @@ export class AppShell extends DiffReviewerElement {
     this.showNotesPanel = true;
   }
 
+  private handleRangeChange(e: CustomEvent) {
+    this.currentRange = e.detail.range;
+    console.log('Range changed:', this.currentRange);
+    
+    // Manually update diff-viewer since Lit reactivity doesn't work without Shadow DOM
+    const diffViewer = this.querySelector('diff-viewer') as any;
+    if (diffViewer) {
+      diffViewer.currentRange = this.currentRange;
+      diffViewer.requestUpdate();
+    }
+  }
+
   private async handleGeneralNotesChange(e: CustomEvent) {
     this.generalNotes = e.detail.text;
     try {
@@ -176,7 +191,11 @@ export class AppShell extends DiffReviewerElement {
       </div>
       <div class="main-content">
         <div class="diff-section">
-          <diff-viewer @line-click=${this.handleLineClick}></diff-viewer>
+          <range-picker @range-change=${this.handleRangeChange}></range-picker>
+          <diff-viewer
+            .currentRange=${this.currentRange}
+            @line-click=${this.handleLineClick}
+          ></diff-viewer>
           <div class="general-notes-section">
             <general-notes-input
               .value=${this.generalNotes}

@@ -15,13 +15,14 @@ import (
 // Config holds the configuration for handlers
 type Config struct {
 	RepoDir       string
-	BaseBranch    string
-	ChangedBranch string
+	BaseCommit    string
+	ChangedCommit string
 	NotesStorage  *notes.Storage
 	ShutdownChan  chan struct{}
 }
 
-// HandleDiff returns the diff between branches
+// HandleDiff returns the diff between commits
+// Supports optional query parameters 'from' and 'to' to override defaults
 func HandleDiff(cfg *Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodGet {
@@ -29,7 +30,35 @@ func HandleDiff(cfg *Config) http.HandlerFunc {
 			return
 		}
 
-		files, err := git.GetDiff(cfg.RepoDir, cfg.BaseBranch, cfg.ChangedBranch)
+		// Allow override via query parameters
+		fromCommit := r.URL.Query().Get("from")
+		toCommit := r.URL.Query().Get("to")
+
+		if fromCommit == "" {
+			fromCommit = cfg.BaseCommit
+		} else {
+			// Resolve the provided ref
+			resolved, err := git.ResolveRef(cfg.RepoDir, fromCommit)
+			if err != nil {
+				http.Error(w, fmt.Sprintf("Invalid from ref: %v", err), http.StatusBadRequest)
+				return
+			}
+			fromCommit = resolved
+		}
+
+		if toCommit == "" {
+			toCommit = cfg.ChangedCommit
+		} else {
+			// Resolve the provided ref
+			resolved, err := git.ResolveRef(cfg.RepoDir, toCommit)
+			if err != nil {
+				http.Error(w, fmt.Sprintf("Invalid to ref: %v", err), http.StatusBadRequest)
+				return
+			}
+			toCommit = resolved
+		}
+
+		files, err := git.GetDiff(cfg.RepoDir, fromCommit, toCommit)
 		if err != nil {
 			http.Error(w, fmt.Sprintf("Failed to get diff: %v", err), http.StatusInternalServerError)
 			return
@@ -273,4 +302,50 @@ func getIntQueryParam(r *http.Request, name string, defaultValue int) int {
 		return i
 	}
 	return defaultValue
+}
+
+// HandleCommitHistory returns the commit history (mimics Sketch's /git/recentlog)
+func HandleCommitHistory(cfg *Config) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+
+		// Get initialCommit from query, default to base commit from config
+		initialCommit := r.URL.Query().Get("initialCommit")
+		if initialCommit == "" {
+			initialCommit = cfg.BaseCommit
+		}
+
+		commits, err := git.GetCommitHistory(cfg.RepoDir, initialCommit)
+		if err != nil {
+			http.Error(w, fmt.Sprintf("Failed to get commit history: %v", err), http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(commits)
+	}
+}
+
+// HandleBaseCommit returns the base commit reference
+func HandleBaseCommit(cfg *Config) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+
+		baseRef, err := git.GetBaseCommitRef(cfg.RepoDir)
+		if err != nil {
+			http.Error(w, fmt.Sprintf("Failed to get base commit: %v", err), http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]string{
+			"base_commit": baseRef,
+		})
+	}
 }

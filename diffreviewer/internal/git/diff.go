@@ -49,13 +49,123 @@ func GetFileContent(repoDir, hash string) (string, error) {
 	return string(out), nil
 }
 
-// ValidateBranch checks if a branch exists in the repository
-func ValidateBranch(repoDir, branch string) error {
-	cmd := exec.Command("git", "-C", repoDir, "rev-parse", "--verify", branch)
+// ValidateBranch checks if a branch or commit exists in the repository
+func ValidateBranch(repoDir, ref string) error {
+	cmd := exec.Command("git", "-C", repoDir, "rev-parse", "--verify", ref)
 	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("branch %q does not exist", branch)
+		return fmt.Errorf("ref %q does not exist", ref)
 	}
 	return nil
+}
+
+// ResolveRef resolves a git reference to its full commit hash
+func ResolveRef(repoDir, ref string) (string, error) {
+	cmd := exec.Command("git", "-C", repoDir, "rev-parse", ref)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		return "", fmt.Errorf("error resolving ref %q: %w - %s", ref, err, string(out))
+	}
+	return strings.TrimSpace(string(out)), nil
+}
+
+// GitLogEntry represents a commit in git history
+type GitLogEntry struct {
+	Hash    string   `json:"hash"`    // The full commit hash
+	Refs    []string `json:"refs"`    // References (branches, tags) pointing to this commit
+	Subject string   `json:"subject"` // The commit subject/message
+}
+
+// GetCommitHistory returns the commit history from initialCommit to HEAD
+// This mimics Sketch's GitRecentLog functionality
+func GetCommitHistory(repoDir, initialCommit string) ([]GitLogEntry, error) {
+	if initialCommit == "" {
+		return nil, fmt.Errorf("initial commit hash must be provided")
+	}
+
+	// Get commit log starting from HEAD, limited by max count
+	// We use --max-count to limit results rather than ranges
+	args := []string{
+		"-C", repoDir,
+		"log",
+		"--format=%H%x00%D%x00%s",
+		"--decorate=full",
+		"--max-count=50", // Limit to 50 most recent commits
+		"HEAD",
+	}
+
+	cmd := exec.Command("git", args...)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		return nil, fmt.Errorf("error executing git log: %w - %s", err, string(out))
+	}
+
+	var entries []GitLogEntry
+	scanner := bufio.NewScanner(strings.NewReader(strings.TrimSpace(string(out))))
+	for scanner.Scan() {
+		line := scanner.Text()
+		parts := strings.Split(line, "\x00")
+		if len(parts) < 3 {
+			continue
+		}
+
+		entry := GitLogEntry{
+			Hash:    parts[0],
+			Subject: parts[2],
+		}
+
+		// Parse refs if present
+		if parts[1] != "" {
+			refs := strings.Split(parts[1], ", ")
+			for _, ref := range refs {
+				ref = strings.TrimSpace(ref)
+				if ref != "" {
+					entry.Refs = append(entry.Refs, ref)
+				}
+			}
+		}
+
+		entries = append(entries, entry)
+	}
+
+	return entries, nil
+}
+
+// getCommitInfo gets info for a single commit
+func getCommitInfo(repoDir, commit string) (GitLogEntry, error) {
+	cmd := exec.Command("git", "-C", repoDir, "log", "-1", "--format=%H%x00%D%x00%s", "--decorate=full", commit)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		return GitLogEntry{}, fmt.Errorf("error getting commit info: %w - %s", err, string(out))
+	}
+
+	line := strings.TrimSpace(string(out))
+	parts := strings.Split(line, "\x00")
+	if len(parts) < 3 {
+		return GitLogEntry{}, fmt.Errorf("unexpected git log output format")
+	}
+
+	entry := GitLogEntry{
+		Hash:    parts[0],
+		Subject: parts[2],
+	}
+
+	// Parse refs if present
+	if parts[1] != "" {
+		refs := strings.Split(parts[1], ", ")
+		for _, ref := range refs {
+			ref = strings.TrimSpace(ref)
+			if ref != "" {
+				entry.Refs = append(entry.Refs, ref)
+			}
+		}
+	}
+
+	return entry, nil
+}
+
+// GetBaseCommitRef returns the base commit for diffing (HEAD by default)
+func GetBaseCommitRef(repoDir string) (string, error) {
+	return ResolveRef(repoDir, "HEAD")
 }
 
 func parseRawDiffWithNumstat(rawOutput, numstatOutput string) ([]DiffFile, error) {

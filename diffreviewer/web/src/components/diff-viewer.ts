@@ -1,12 +1,16 @@
 import { html, css } from 'lit';
 import { DiffReviewerElement } from './diffreviewer-element.js';
-import { customElement, state } from 'lit/decorators.js';
+import { customElement, state, property } from 'lit/decorators.js';
 import { DiffFile } from '../types';
 import { fetchDiff, fetchFileContent, saveFileContent } from '../services/api';
+import type { DiffRange } from './range-picker';
 import './monaco-view';
 
 @customElement('diff-viewer')
 export class DiffViewer extends DiffReviewerElement {
+  @property({ attribute: false })
+  currentRange: DiffRange | null = null;
+
   @state() private files: DiffFile[] = [];
   @state() private selectedFile: string = '';
   @state() private loading: boolean = true;
@@ -84,14 +88,34 @@ export class DiffViewer extends DiffReviewerElement {
 
   async connectedCallback() {
     super.connectedCallback();
-    await this.loadDiff();
+    // Don't load immediately - wait for range picker
+  }
+
+  updated(changedProperties: Map<string, any>) {
+    super.updated(changedProperties);
+    
+    // Reload diff when range changes
+    if (changedProperties.has('currentRange') && this.currentRange) {
+      this.loadDiff();
+    }
   }
 
   private async loadDiff() {
+    if (!this.currentRange) {
+      return;
+    }
+
     try {
       this.loading = true;
       this.error = null;
-      this.files = await fetchDiff();
+      
+      // Clear file contents cache when loading new diff
+      this.fileContents.clear();
+      
+      this.files = await fetchDiff(
+        this.currentRange.from,
+        this.currentRange.to
+      );
 
       if (this.files.length > 0) {
         this.selectedFile = this.files[0].path;

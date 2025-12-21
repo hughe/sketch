@@ -1,5 +1,11 @@
 // Type definitions for DiffReviewer
 
+export interface GitLogEntry {
+  hash: string;
+  refs: string[];
+  subject: string;
+}
+
 export interface DiffFile {
   path: string;
   old_path: string;

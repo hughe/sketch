@@ -1,6 +1,7 @@
 // API service for DiffReviewer
 import type {
   DiffFile,
+  GitLogEntry,
   SaveFileRequest,
   SaveFileResponse,
   ShutdownRequest,
@@ -8,11 +9,27 @@ import type {
 } from '../types';
 
 /**
- * Fetches diff between branches specified at CLI startup
+ * Fetches diff between two commits
+ * @param from Starting commit hash
+ * @param to Ending commit hash
  */
-export async function fetchDiff(): Promise<DiffFile[]> {
+export async function fetchDiff(from?: string, to?: string): Promise<DiffFile[]> {
   try {
-    const response = await fetch('./api/diff');
+    let url = './api/diff';
+    const params = new URLSearchParams();
+    
+    if (from) {
+      params.append('from', from);
+    }
+    if (to) {
+      params.append('to', to);
+    }
+    
+    if (params.toString()) {
+      url += '?' + params.toString();
+    }
+    
+    const response = await fetch(url);
     
     if (!response.ok) {
       throw new Error(`Failed to fetch diff: ${response.statusText}`);
@@ -76,6 +93,51 @@ export async function saveFileContent(
     return await response.json();
   } catch (error) {
     console.error('Error saving file content:', error);
+    throw error;
+  }
+}
+
+/**
+ * Fetches commit history from initialCommit to HEAD
+ * @param initialCommit Starting commit hash (optional)
+ */
+export async function fetchCommitHistory(
+  initialCommit?: string
+): Promise<GitLogEntry[]> {
+  try {
+    let url = './api/commits';
+    if (initialCommit) {
+      url += `?initialCommit=${encodeURIComponent(initialCommit)}`;
+    }
+    
+    const response = await fetch(url);
+    
+    if (!response.ok) {
+      throw new Error(`Failed to fetch commit history: ${response.statusText}`);
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching commit history:', error);
+    throw error;
+  }
+}
+
+/**
+ * Fetches the base commit reference
+ */
+export async function fetchBaseCommit(): Promise<string> {
+  try {
+    const response = await fetch('./api/base-commit');
+    
+    if (!response.ok) {
+      throw new Error(`Failed to fetch base commit: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    return data.base_commit;
+  } catch (error) {
+    console.error('Error fetching base commit:', error);
     throw error;
   }
 }

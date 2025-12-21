@@ -29,39 +29,57 @@ func main() {
 		port          = flag.Int("port", 8000, "Port number")
 		notesFile     = flag.String("notes", "", "Notes file path (optional, if not specified notes go to stdout)")
 		repoDir       = flag.String("repo", ".", "Repository path")
-		baseBranch    = flag.String("base", "main", "Base branch")
-		changedBranch string
+		baseCommit    string
+		changedCommit string
 	)
 
 	flag.Parse()
 
-	// Get changed branch from remaining args
+	// Get commits from remaining args
 	args := flag.Args()
+
+	// If no args provided, default to HEAD~1..HEAD
 	if len(args) == 0 {
-		fmt.Fprintf(os.Stderr, "Usage: diffreviewer [base-branch] <changed-branch> [options]\n")
-		fmt.Fprintf(os.Stderr, "\nExamples:\n")
-		fmt.Fprintf(os.Stderr, "  diffreviewer feature-branch              # compare to main\n")
-		fmt.Fprintf(os.Stderr, "  diffreviewer develop feature-branch      # compare develop to feature-branch\n")
-		fmt.Fprintf(os.Stderr, "  diffreviewer feature --notes notes.md    # save notes to file\n")
-		flag.PrintDefaults()
-		os.Exit(1)
-	}
+		// Resolve HEAD~1 as base
+		base, err := git.ResolveRef(*repoDir, "HEAD~1")
+		if err != nil {
+			log.Fatalf("Failed to resolve HEAD~1: %v", err)
+		}
+		baseCommit = base
 
-	if len(args) == 1 {
-		// Only changed branch provided, use default base
-		changedBranch = args[0]
+		// Resolve HEAD as changed
+		changed, err := git.ResolveRef(*repoDir, "HEAD")
+		if err != nil {
+			log.Fatalf("Failed to resolve HEAD: %v", err)
+		}
+		changedCommit = changed
+	} else if len(args) == 1 {
+		// Only changed commit provided, use HEAD~1 as base
+		base, err := git.ResolveRef(*repoDir, "HEAD~1")
+		if err != nil {
+			log.Fatalf("Failed to resolve HEAD~1: %v", err)
+		}
+		baseCommit = base
+
+		// Resolve the provided ref
+		changed, err := git.ResolveRef(*repoDir, args[0])
+		if err != nil {
+			log.Fatalf("Invalid changed ref %q: %v", args[0], err)
+		}
+		changedCommit = changed
 	} else {
-		// Both branches provided
-		*baseBranch = args[0]
-		changedBranch = args[1]
-	}
+		// Both commits provided
+		base, err := git.ResolveRef(*repoDir, args[0])
+		if err != nil {
+			log.Fatalf("Invalid base ref %q: %v", args[0], err)
+		}
+		baseCommit = base
 
-	// Validate branches
-	if err := git.ValidateBranch(*repoDir, *baseBranch); err != nil {
-		log.Fatalf("Invalid base branch: %v", err)
-	}
-	if err := git.ValidateBranch(*repoDir, changedBranch); err != nil {
-		log.Fatalf("Invalid changed branch: %v", err)
+		changed, err := git.ResolveRef(*repoDir, args[1])
+		if err != nil {
+			log.Fatalf("Invalid changed ref %q: %v", args[1], err)
+		}
+		changedCommit = changed
 	}
 
 	// Create notes storage
@@ -73,8 +91,8 @@ func main() {
 	// Create handler config
 	cfg := &handlers.Config{
 		RepoDir:       *repoDir,
-		BaseBranch:    *baseBranch,
-		ChangedBranch: changedBranch,
+		BaseCommit:    baseCommit,
+		ChangedCommit: changedCommit,
 		NotesStorage:  notesStorage,
 		ShutdownChan:  shutdownChan,
 	}
@@ -86,6 +104,8 @@ func main() {
 	mux.HandleFunc("/api/diff", handlers.HandleDiff(cfg))
 	mux.HandleFunc("/api/file-content", handlers.HandleFileContent(cfg))
 	mux.HandleFunc("/api/save-file", handlers.HandleSaveFile(cfg))
+	mux.HandleFunc("/api/commits", handlers.HandleCommitHistory(cfg))
+	mux.HandleFunc("/api/base-commit", handlers.HandleBaseCommit(cfg))
 	mux.HandleFunc("/api/notes", func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodGet:
@@ -154,7 +174,7 @@ func main() {
 	}()
 
 	fmt.Printf("DiffReviewer starting on http://localhost%s\n", addr)
-	fmt.Printf("Comparing %s...%s\n", *baseBranch, changedBranch)
+	fmt.Printf("Comparing %s...%s\n", baseCommit[:8], changedCommit[:8])
 	if *notesFile != "" {
 		fmt.Printf("Notes will be saved to: %s\n", *notesFile)
 	} else {

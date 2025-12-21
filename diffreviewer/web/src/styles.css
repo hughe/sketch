@@ -210,3 +210,172 @@ monaco-view .monaco-container {
   width: 100%;
   height: 100%;
 }
+
+/* Range Picker Styles */
+range-picker {
+  display: block;
+  width: 100%;
+  padding: 1rem;
+  border-bottom: 1px solid #e5e7eb;
+  background: white;
+}
+
+range-picker .container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+range-picker .range-selectors {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+  position: relative;
+}
+
+range-picker label {
+  font-weight: 500;
+  font-size: 0.875rem;
+  color: #374151;
+  white-space: nowrap;
+}
+
+range-picker .dropdown-container {
+  position: relative;
+  flex: 1;
+  min-width: 300px;
+}
+
+range-picker .dropdown-button {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  padding-right: 2rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  text-align: left;
+  min-height: 36px;
+  font-size: 0.875rem;
+  cursor: pointer;
+  background: white;
+  color: #111827;
+  position: relative;
+}
+
+range-picker .dropdown-button:hover {
+  border-color: #9ca3af;
+}
+
+range-picker .dropdown-button:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+range-picker .dropdown-arrow {
+  position: absolute;
+  right: 0.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  transition: transform 0.2s;
+  width: 12px;
+  height: 12px;
+}
+
+range-picker .dropdown-arrow.open {
+  transform: translateY(-50%) rotate(180deg);
+}
+
+range-picker .dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  z-index: 50;
+  max-height: 300px;
+  overflow-y: auto;
+  margin-top: 0.25rem;
+}
+
+range-picker .dropdown-item {
+  padding: 0.625rem 0.75rem;
+  cursor: pointer;
+  border-bottom: 1px solid #f3f4f6;
+  display: flex;
+  align-items: start;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  line-height: 1.25;
+}
+
+range-picker .dropdown-item:last-child {
+  border-bottom: none;
+}
+
+range-picker .dropdown-item:hover {
+  background: #f9fafb;
+}
+
+range-picker .dropdown-item.selected {
+  background: #eff6ff;
+}
+
+range-picker .commit-hash {
+  font-family: monospace;
+  color: #6b7280;
+  font-size: 0.75rem;
+}
+
+range-picker .commit-subject {
+  color: #111827;
+  font-size: 0.75rem;
+  flex: 1;
+  min-width: 200px;
+  word-break: break-word;
+}
+
+range-picker .commit-refs {
+  display: flex;
+  gap: 0.25rem;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
+
+range-picker .ref-badge {
+  padding: 0.125rem 0.375rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+range-picker .ref-badge.branch {
+  background: #dcfce7;
+  color: #166534;
+}
+
+range-picker .ref-badge.tag {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+range-picker .loading,
+range-picker .error {
+  font-style: italic;
+  color: #6b7280;
+  font-size: 0.875rem;
+}
+
+range-picker .error {
+  color: #dc2626;
+}
+
+range-picker .commit-button-content {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding-right: 1.5rem;
+}
