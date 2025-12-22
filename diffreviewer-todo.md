@@ -467,7 +467,7 @@ Trigger graceful shutdown
 - [x] Test file switching
 - [x] Test file editing workflow
 
-#### Notes Panel Component
+#### Notes Popup Component
 - [x] Create inline note popup in Monaco editor
 - [x] Display note textarea when clicking gutter margin
 - [x] Show line content context in note popup
