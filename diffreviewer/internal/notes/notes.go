@@ -122,7 +122,12 @@ func (s *Storage) WriteToWriter(w io.Writer) error {
 func (s *Storage) toMarkdown() string {
 	var sb strings.Builder
 
-	sb.WriteString("# Diff Review Notes\n\n")
+	sb.WriteString("# Review Notes\n\n")
+
+	if s.generalNotes != "" {
+		sb.WriteString(s.generalNotes)
+		sb.WriteString("\n\n")
+	}
 
 	if len(s.lineNotes) > 0 {
 		// Group notes by file
@@ -159,12 +164,6 @@ func (s *Storage) toMarkdown() string {
 				sb.WriteString("\n\n")
 			}
 		}
-	}
-
-	if s.generalNotes != "" {
-		sb.WriteString("## General Notes\n\n")
-		sb.WriteString(s.generalNotes)
-		sb.WriteString("\n")
 	}
 
 	return sb.String()
