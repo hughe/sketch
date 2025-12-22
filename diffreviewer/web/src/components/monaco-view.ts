@@ -471,6 +471,7 @@ export class MonacoView extends DiffReviewerElement {
       glyphMargin: true,
       renderOverviewRuler: true,
       scrollBeyondLastLine: true,
+      minimap: { enabled: false },
       hideUnchangedRegions: {
         enabled: true,
         contextLineCount: 5,
@@ -493,7 +494,7 @@ export class MonacoView extends DiffReviewerElement {
       glyphMargin: true,
       folding: true,
       scrollBeyondLastLine: false,
-      minimap: { enabled: true },
+      minimap: { enabled: false },
       fontSize: 14,
       renderWhitespace: 'selection' as const,
     };

@@ -147,6 +147,10 @@ export class AppShell extends DiffReviewerElement {
       // Show shutting down message
       document.body.innerHTML =
         '<div style="display: flex; align-items: center; justify-content: center; height: 100vh; font-size: 1.5rem; color: #6b7280;">Shutting down...</div>';
+      // Close the window after a brief delay
+      setTimeout(() => {
+        window.close();
+      }, 1000);
     } catch (err) {
       alert('Error during shutdown: ' + (err instanceof Error ? err.message : 'Unknown error'));
     }
@@ -156,9 +160,6 @@ export class AppShell extends DiffReviewerElement {
     return html`
       <div class="header">
         <div class="title">DiffReviewer</div>
-        <div class="header-actions">
-          <done-button @done=${this.handleDone}></done-button>
-        </div>
       </div>
       <div class="main-content">
         <div class="diff-section">
@@ -172,6 +173,7 @@ export class AppShell extends DiffReviewerElement {
               .value=${this.generalNotes}
               @notes-change=${this.handleGeneralNotesChange}
             ></general-notes-input>
+            <done-button @done=${this.handleDone}></done-button>
           </div>
         </div>
       </div>

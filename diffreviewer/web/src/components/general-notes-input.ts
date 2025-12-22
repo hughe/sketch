@@ -11,13 +11,14 @@ export class GeneralNotesInput extends DiffReviewerElement {
   static styles = css`
     :host {
       display: block;
-      padding: 1rem;
+      flex: 1;
     }
 
     .container {
       display: flex;
       flex-direction: column;
       gap: 0.5rem;
+      height: 100%;
     }
 
     .label {
@@ -35,6 +36,7 @@ export class GeneralNotesInput extends DiffReviewerElement {
       font-size: 0.875rem;
       font-family: inherit;
       resize: vertical;
+      flex: 1;
     }
 
     textarea:focus {

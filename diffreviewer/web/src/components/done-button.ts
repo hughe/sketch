@@ -5,24 +5,34 @@ import { customElement } from 'lit/decorators.js';
 @customElement('done-button')
 export class DoneButton extends DiffReviewerElement {
   static styles = css`
+    :host {
+      display: flex;
+      align-items: center;
+    }
+
     button {
-      padding: 0.5rem 1.5rem;
-      background: #10b981;
+      padding: 0.75rem 2rem;
+      background: #2563eb;
       color: white;
       border: none;
-      border-radius: 0.375rem;
-      font-size: 0.875rem;
-      font-weight: 500;
+      border-radius: 0.5rem;
+      font-size: 1rem;
+      font-weight: 600;
       cursor: pointer;
-      transition: background 0.2s;
+      transition: all 0.2s;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      white-space: nowrap;
     }
 
     button:hover {
-      background: #059669;
+      background: #1d4ed8;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+      transform: translateY(-1px);
     }
 
     button:active {
-      background: #047857;
+      background: #1e40af;
+      transform: translateY(0);
     }
   `;
 
