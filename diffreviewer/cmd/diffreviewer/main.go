@@ -151,18 +151,18 @@ func main() {
 	go func() {
 		select {
 		case <-shutdownChan:
-			fmt.Println("\nShutdown requested via API...")
+			fmt.Fprintln(os.Stderr, "\nShutdown requested via API...")
 		case <-sigChan:
-			fmt.Println("\nShutdown signal received...")
+			fmt.Fprintln(os.Stderr, "\nShutdown signal received...")
 		}
 
 		// Write notes to stdout or file
 		if *notesFile == "" {
-			fmt.Println("\n" + strings.Repeat("=", 80))
+			fmt.Println(strings.Repeat("=", 80))
 			notesStorage.WriteToStdout()
-			fmt.Println(strings.Repeat("=", 80) + "\n")
+			fmt.Println(strings.Repeat("=", 80))
 		} else {
-			fmt.Printf("Notes saved to: %s\n", *notesFile)
+			fmt.Fprintf(os.Stderr, "Notes saved to: %s\n", *notesFile)
 		}
 
 		// Shutdown server
@@ -173,12 +173,12 @@ func main() {
 		}
 	}()
 
-	fmt.Printf("DiffReviewer starting on http://localhost%s\n", addr)
-	fmt.Printf("Comparing %s...%s\n", baseCommit[:8], changedCommit[:8])
+	fmt.Fprintf(os.Stderr, "DiffReviewer starting on http://localhost%s\n", addr)
+	fmt.Fprintf(os.Stderr, "Comparing %s...%s\n", baseCommit[:8], changedCommit[:8])
 	if *notesFile != "" {
-		fmt.Printf("Notes will be saved to: %s\n", *notesFile)
+		fmt.Fprintf(os.Stderr, "Notes will be saved to: %s\n", *notesFile)
 	} else {
-		fmt.Println("Notes will be printed to stdout on exit")
+		fmt.Fprintln(os.Stderr, "Notes will be printed to stdout on exit")
 	}
 
 	if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
