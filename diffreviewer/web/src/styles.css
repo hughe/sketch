@@ -427,3 +427,26 @@ monaco-view .note-btn-secondary {
 monaco-view .note-btn-secondary:hover {
   background: #f3f4f6;
 }
+
+/* Glyph margin decoration styles - speech bubble icon that appears on hover */
+monaco-view .comment-glyph-decoration {
+  width: 16px !important;
+  height: 18px !important;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+monaco-view .comment-glyph-decoration:before {
+  content: '💬';
+  font-size: 12px;
+  line-height: 18px;
+  width: 16px;
+  height: 18px;
+  display: block;
+  text-align: center;
+}
+
+monaco-view .comment-glyph-decoration.hover-visible {
+  opacity: 1;
+}

@@ -53,6 +53,7 @@ export class MonacoView extends DiffReviewerElement {
   private originalModel?: monaco.editor.ITextModel;
   private modifiedModel?: monaco.editor.ITextModel;
   private modifiedDecorations?: monaco.editor.IEditorDecorationsCollection;
+  private visibleGlyphs: Set<string> = new Set();
 
   static styles = css`
     :host {
@@ -93,12 +94,25 @@ export class MonacoView extends DiffReviewerElement {
       color: #065f46;
     }
 
-    .comment-glyph {
+    .comment-glyph-decoration {
+      width: 16px !important;
+      height: 18px !important;
       cursor: pointer;
-      opacity: 0.7;
+      opacity: 0;
+      transition: opacity 0.2s ease;
     }
 
-    .comment-glyph:hover {
+    .comment-glyph-decoration:before {
+      content: '💬';
+      font-size: 12px;
+      line-height: 18px;
+      width: 16px;
+      height: 18px;
+      display: block;
+      text-align: center;
+    }
+
+    .comment-glyph-decoration.hover-visible {
       opacity: 1;
     }
 
@@ -302,6 +316,36 @@ export class MonacoView extends DiffReviewerElement {
     const modifiedEditor = this.editor.getModifiedEditor();
     if (!modifiedEditor) return;
 
+    // Track the currently hovered line for this editor
+    let currentHoveredLine: number | null = null;
+
+    // Listen for mouse movement to show/hide speech bubble on hover
+    modifiedEditor.onMouseMove((e) => {
+      if (e.target.position) {
+        const lineNumber = e.target.position.lineNumber;
+
+        // If we're hovering over a different line, update visibility
+        if (currentHoveredLine !== lineNumber) {
+          // Hide previous line's glyph
+          if (currentHoveredLine !== null) {
+            this.toggleGlyphVisibility(currentHoveredLine, false);
+          }
+
+          // Show current line's glyph
+          this.toggleGlyphVisibility(lineNumber, true);
+          currentHoveredLine = lineNumber;
+        }
+      }
+    });
+
+    // Listen for mouse leaving the editor to clear hover state
+    modifiedEditor.onMouseLeave(() => {
+      if (currentHoveredLine !== null) {
+        this.toggleGlyphVisibility(currentHoveredLine, false);
+        currentHoveredLine = null;
+      }
+    });
+
     // Listen for mouse clicks on glyph margin (like Sketch does)
     modifiedEditor.onMouseDown((e) => {
       if (e.target.type === window.monaco!.editor.MouseTargetType.GUTTER_GLYPH_MARGIN) {
@@ -413,23 +457,78 @@ export class MonacoView extends DiffReviewerElement {
     this.closeNoteBox();
   }
 
-  public updateNoteDecorations(linesWithNotes: number[]) {
+  /**
+   * Initialize glyph decorations for all lines in the modified editor
+   */
+  private initializeGlyphDecorations() {
     const monaco = window.monaco;
-    if (!this.editor || !monaco) return;
+    if (!this.editor || !monaco || !this.modifiedModel) return;
 
     const modifiedEditor = this.editor.getModifiedEditor();
     if (!modifiedEditor || !this.modifiedDecorations) return;
 
-    const decorations = linesWithNotes.map((line) => ({
-      range: new monaco.Range(line, 1, line, 1),
-      options: {
-        isWholeLine: false,
-        glyphMarginClassName: 'comment-glyph',
-        glyphMarginHoverMessage: { value: 'Note on this line' },
-      },
-    }));
+    // Create decorations for every line
+    const lineCount = this.modifiedModel.getLineCount();
+    const decorations: monaco.editor.IModelDeltaDecoration[] = [];
+
+    for (let lineNumber = 1; lineNumber <= lineCount; lineNumber++) {
+      decorations.push({
+        range: new monaco.Range(lineNumber, 1, lineNumber, 1),
+        options: {
+          isWholeLine: false,
+          glyphMarginClassName: `comment-glyph-decoration comment-glyph-modified-${lineNumber}`,
+          glyphMarginHoverMessage: { value: 'Add note' },
+          stickiness: monaco.editor.TrackedRangeStickiness.NeverGrowsWhenTypingAtEdges,
+        },
+      });
+    }
 
     this.modifiedDecorations.set(decorations);
+  }
+
+  /**
+   * Clear all visible glyphs
+   */
+  private clearAllVisibleGlyphs() {
+    try {
+      this.visibleGlyphs.forEach((glyphId) => {
+        const element = this.container.value?.querySelector(`.${glyphId}`);
+        if (element) {
+          element.classList.remove('hover-visible');
+        }
+      });
+      this.visibleGlyphs.clear();
+    } catch (error) {
+      console.error('Error clearing visible glyphs:', error);
+    }
+  }
+
+  /**
+   * Toggle the visibility of a glyph decoration for a specific line
+   */
+  private toggleGlyphVisibility(lineNumber: number, visible: boolean) {
+    try {
+      // If making visible, clear all existing visible glyphs first
+      if (visible) {
+        this.clearAllVisibleGlyphs();
+      }
+
+      // Find the glyph decoration for this line in the modified editor
+      const glyphId = `comment-glyph-modified-${lineNumber}`;
+      const element = this.container.value?.querySelector(`.${glyphId}`);
+
+      if (element) {
+        if (visible) {
+          element.classList.add('hover-visible');
+          this.visibleGlyphs.add(glyphId);
+        } else {
+          element.classList.remove('hover-visible');
+          this.visibleGlyphs.delete(glyphId);
+        }
+      }
+    } catch (error) {
+      console.error('Error toggling glyph visibility:', error);
+    }
   }
 
   private async initializeEditor() {
@@ -519,6 +618,7 @@ export class MonacoView extends DiffReviewerElement {
     this.setupKeyboardShortcuts();
     this.setupContentChangeListener();
     this.setupLineClickListener();
+    this.initializeGlyphDecorations();
   }
 
   private updateModels() {
@@ -535,6 +635,9 @@ export class MonacoView extends DiffReviewerElement {
     this.modifiedModel.setValue(this.modifiedCode || '');
     this.lastSavedContent = this.modifiedCode || '';
     this.saveState = 'idle';
+    
+    // Reinitialize glyph decorations after model update
+    this.initializeGlyphDecorations();
   }
 
   async updated(changedProperties: Map<string, any>) {
