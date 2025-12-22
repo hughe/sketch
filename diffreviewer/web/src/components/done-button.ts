@@ -5,35 +5,7 @@ import { customElement } from 'lit/decorators.js';
 @customElement('done-button')
 export class DoneButton extends DiffReviewerElement {
   static styles = css`
-    :host {
-      display: flex;
-      align-items: center;
-    }
-
-    button {
-      padding: 0.75rem 2rem;
-      background: #2563eb;
-      color: white;
-      border: none;
-      border-radius: 0.5rem;
-      font-size: 1rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-      white-space: nowrap;
-    }
-
-    button:hover {
-      background: #1d4ed8;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
-      transform: translateY(-1px);
-    }
-
-    button:active {
-      background: #1e40af;
-      transform: translateY(0);
-    }
+    /* No custom styles needed - using Tailwind classes */
   `;
 
   private handleClick() {
@@ -45,6 +17,9 @@ export class DoneButton extends DiffReviewerElement {
   }
 
   render() {
-    return html`<button @click=${this.handleClick}>Done</button>`;
+    return html`<button 
+      @click=${this.handleClick}
+      class="px-8 py-3 bg-blue-600 text-white border-none rounded-lg text-base font-semibold cursor-pointer transition-all duration-200 shadow-md hover:bg-blue-700 hover:shadow-lg hover:-translate-y-0.5 active:bg-blue-800 active:translate-y-0 whitespace-nowrap"
+    >Done</button>`;
   }
 }

@@ -15,60 +15,7 @@ export class AppShell extends DiffReviewerElement {
   @state() private currentRange: DiffRange | null = null;
 
   static styles = css`
-    :host {
-      display: flex;
-      flex-direction: column;
-      width: 100%;
-      height: 100vh;
-      overflow: hidden;
-    }
-
-    .header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 1rem;
-      border-bottom: 1px solid #e5e7eb;
-      background: white;
-      flex-shrink: 0;
-    }
-
-    .title {
-      font-size: 1.5rem;
-      font-weight: 600;
-      color: #111827;
-    }
-
-    .header-actions {
-      display: flex;
-      gap: 0.5rem;
-      align-items: center;
-    }
-
-
-
-    .main-content {
-      display: flex;
-      flex: 1;
-      overflow: hidden;
-    }
-
-    .diff-section {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
-
-
-
-    .general-notes-section {
-      border-top: 1px solid #e5e7eb;
-      background: white;
-      flex-shrink: 0;
-    }
-
-
+    /* No custom styles needed - using Tailwind classes */
   `;
 
   async connectedCallback() {
@@ -158,18 +105,19 @@ export class AppShell extends DiffReviewerElement {
 
   render() {
     return html`
-      <div class="header">
-        <div class="title">DiffReviewer</div>
+      <div class="flex items-center justify-between p-4 border-b border-gray-200 bg-white flex-shrink-0">
+        <div class="text-2xl font-semibold text-gray-900">DiffReviewer</div>
       </div>
-      <div class="main-content">
-        <div class="diff-section">
+      <div class="flex flex-1 overflow-hidden">
+        <div class="flex-1 flex flex-col overflow-hidden">
           <range-picker @range-change=${this.handleRangeChange}></range-picker>
           <diff-viewer
             .currentRange=${this.currentRange}
             @note-added=${this.handleNoteAdded}
           ></diff-viewer>
-          <div class="general-notes-section">
+          <div class="border-t border-gray-200 bg-white flex-shrink-0 flex justify-center items-stretch p-8 gap-4">
             <general-notes-input
+              class="flex-1 max-w-[1000px]"
               .value=${this.generalNotes}
               @notes-change=${this.handleGeneralNotesChange}
             ></general-notes-input>
