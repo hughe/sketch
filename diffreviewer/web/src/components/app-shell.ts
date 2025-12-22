@@ -99,6 +99,13 @@ export class AppShell extends DiffReviewerElement {
     
     this.requestUpdate();
     
+    // Manually update the general-notes-input component
+    const notesInput = this.querySelector('general-notes-input') as any;
+    if (notesInput) {
+      notesInput.value = this.generalNotes;
+      notesInput.requestUpdate();
+    }
+    
     // Save to backend immediately
     try {
       await updateGeneralNotes(this.generalNotes);

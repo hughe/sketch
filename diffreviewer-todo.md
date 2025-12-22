@@ -160,7 +160,7 @@ diffreviewer/
 │   │   ├── components/
 │   │   │   ├── diff-viewer.ts   # Main diff viewer (simplified)
 │   │   │   ├── monaco-view.ts   # Monaco wrapper (extracted)
-│   │   │   ├── notes-panel.ts   # Notes UI component
+│   │   │   ├── notes-panel.ts   # Notes UI component (deprecated - notes now use inline popup)
 │   │   │   └── done-button.ts   # Done button component
 │   │   ├── services/
 │   │   │   ├── api.ts           # API client
@@ -311,7 +311,7 @@ Trigger graceful shutdown
 5. Test diff display
 
 ### Phase 5: Notes UI
-1. Add notes panel component
+1. Add inline notes popup in Monaco editor
 2. Implement line-specific commenting in Monaco
 3. Connect to notes API
 4. Add UI for viewing/editing/deleting notes
@@ -468,14 +468,12 @@ Trigger graceful shutdown
 - [x] Test file editing workflow
 
 #### Notes Panel Component
-- [x] Create `web/src/components/notes-panel.ts`
-- [x] Add sidebar or overlay for notes
-- [x] Display list of all notes grouped by file
-- [x] Show file name, line number, and quoted line content for each note
-- [ ] Add "Jump to line" functionality (not critical for MVP)
-- [x] Add edit/delete buttons for notes
-- [x] Notes can be added via Monaco line clicks
-- [x] Style notes panel
+- [x] Create inline note popup in Monaco editor
+- [x] Display note textarea when clicking gutter margin
+- [x] Show line content context in note popup
+- [x] Add "Add" and "Cancel" buttons in note popup
+- [x] Notes appended to general notes when added
+- [x] Style inline note popup
 
 #### Done Button Component
 - [x] Create `web/src/components/done-button.ts`
@@ -501,7 +499,7 @@ Trigger graceful shutdown
 - [x] Initialize app shell
 - [x] Register all web components
 - [x] Add global styles
-- [x] Create app layout: header, diff view, notes panel, general notes input at bottom
+- [x] Create app layout: header, diff view, general notes input at bottom
 - [x] Ensure general notes input is always visible at bottom
 - [x] Test overall integration
 - [ ] Add dark mode support (future enhancement)
@@ -587,7 +585,7 @@ Trigger graceful shutdown
 
 ### High Priority
 - [ ] Add keyboard shortcuts (j/k for file navigation, n for adding note, ? for help)
-- [ ] Add "Jump to line" from notes panel to Monaco editor
+- [ ] Add keyboard shortcut to add note on current line
 - [ ] Add dark mode support
 - [ ] Test and fix loading existing notes files (append mode)
 - [ ] Add note templates for common review comments
@@ -651,7 +649,7 @@ Trigger graceful shutdown
 6. ✅ **User can edit files on the right side (modified code)** - DONE
 7. ✅ **User can save file changes with Cmd/Ctrl+S** - DONE
 8. ✅ **File changes persist to working directory** - DONE
-9. ✅ **User can add line-specific notes** - DONE (via notes panel)
+9. ✅ **User can add line-specific notes** - DONE (via inline popup in Monaco editor)
 10. ✅ **User can type general notes in text box at bottom** - DONE
 11. ✅ **Line-specific notes save immediately (if --notes specified)** - DONE
 12. ✅ **General notes auto-save on change** - DONE
@@ -713,7 +711,7 @@ All core functionality is **working and tested**:
   - `diff-viewer.ts` - Diff display and file selector
   - `monaco-view.ts` - Monaco Editor with diff view and editing
   - `range-picker.ts` - Commit range selection
-  - `notes-panel.ts` - Notes sidebar
+  - `notes-panel.ts` - (Deprecated, kept for reference)
   - `done-button.ts` - Graceful shutdown button
   - `general-notes-input.ts` - General notes text area
   - `base-element.ts` - Shadow DOM override for global CSS
@@ -754,7 +752,7 @@ Users can:
 - ✅ Edit files and save changes
 - ✅ Add general review notes
 - ✅ Add line-specific notes
-- ✅ Toggle notes panel
+- ✅ Add inline notes via gutter click
 - ✅ Save notes to markdown file or stdout
 - ✅ Gracefully shutdown with notes export
 

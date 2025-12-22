@@ -197,14 +197,10 @@ export class DiffViewer extends DiffReviewerElement {
     }
   }
 
-  private handleNoteAdded(e: CustomEvent) {
-    // Forward note-added events to parent
-    const event = new CustomEvent('note-added', {
-      detail: e.detail,
-      bubbles: true,
-      composed: true,
-    });
-    this.dispatchEvent(event);
+  private handleNoteAdded(_e: CustomEvent) {
+    // Event already bubbles from monaco-view, no need to forward
+    // Just log for debugging
+    console.log('Diff-viewer saw note-added event (bubbling naturally)');
   }
 
   private getCurrentFile(): DiffFile | undefined {

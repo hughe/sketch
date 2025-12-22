@@ -391,10 +391,8 @@ export class MonacoView extends DiffReviewerElement {
 
     console.log('Submitting note:', formattedNote);
 
-    // Close the note box
-    this.closeNoteBox();
-
-    // Dispatch event to add note to general notes
+    // Dispatch event to add note to general notes BEFORE closing note box
+    // (to ensure clickedLine is still available)
     const event = new CustomEvent('note-added', {
       detail: {
         file: this.modifiedFilename,
@@ -407,7 +405,12 @@ export class MonacoView extends DiffReviewerElement {
       composed: true,
     });
 
+    console.log('About to dispatch event:', event);
     this.dispatchEvent(event);
+    console.log('Event dispatched successfully');
+
+    // Close the note box AFTER dispatching
+    this.closeNoteBox();
   }
 
   public updateNoteDecorations(linesWithNotes: number[]) {
