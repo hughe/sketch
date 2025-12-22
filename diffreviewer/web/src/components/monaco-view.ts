@@ -477,7 +477,6 @@ export class MonacoView extends DiffReviewerElement {
         options: {
           isWholeLine: false,
           glyphMarginClassName: `comment-glyph-decoration comment-glyph-modified-${lineNumber}`,
-          glyphMarginHoverMessage: { value: 'Add note' },
           stickiness: monaco.editor.TrackedRangeStickiness.NeverGrowsWhenTypingAtEdges,
         },
       });
