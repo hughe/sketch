@@ -430,8 +430,7 @@ export class MonacoView extends DiffReviewerElement {
     }
 
     // Format the note similar to Sketch
-    const lineInfo = `Line ${this.clickedLine.line}`;
-    const formattedNote = `**${this.modifiedFilename}** (${lineInfo}):\n\`\`\`\n${this.clickedLine.lineContent}\n\`\`\`\n${this.noteText.trim()}`;
+    const formattedNote = `@${this.modifiedFilename}:${this.clickedLine.line}\n\`\`\`\n${this.clickedLine.lineContent}\n\`\`\`\n${this.noteText.trim()}`;
 
     console.log('Submitting note:', formattedNote);
 
