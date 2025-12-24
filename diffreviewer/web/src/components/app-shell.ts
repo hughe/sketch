@@ -91,13 +91,21 @@ export class AppShell extends DiffReviewerElement {
       // Save general notes to server before shutdown
       await updateGeneralNotes(this.generalNotes);
       await shutdown(this.generalNotes);
-      // Show shutting down message
-      document.body.innerHTML =
-        '<div style="display: flex; align-items: center; justify-content: center; height: 100vh; font-size: 1.5rem; color: #6b7280;">Shutting down...</div>';
-      // Close the window after a brief delay
+
+      // Try to close the window immediately
+      window.close();
+
+      // If we reach here, window.close() didn't work (window is still open)
+      // Show a message instructing the user to close manually
       setTimeout(() => {
-        window.close();
-      }, 1000);
+        if (!window.closed) {
+          document.body.innerHTML =
+            '<div style="display: flex; align-items: center; justify-content: center; height: 100vh; font-size: 1.5rem; color: #6b7280; text-align: center; flex-direction: column; gap: 1rem;">' +
+            '<div>✓ Notes saved successfully!</div>' +
+            '<div style="font-size: 1.2rem;">Please close this window.</div>' +
+            '</div>';
+        }
+      }, 100);
     } catch (err) {
       alert('Error during shutdown: ' + (err instanceof Error ? err.message : 'Unknown error'));
     }
