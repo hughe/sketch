@@ -3,7 +3,9 @@ package git
 import (
 	"bufio"
 	"fmt"
+	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 )
 
@@ -21,10 +23,23 @@ type DiffFile struct {
 }
 
 // GetDiff returns a structured representation of the Git diff between two branches
+// If 'to' is empty, compares 'from' against the working directory
 func GetDiff(repoDir, from, to string) ([]DiffFile, error) {
-	// Use "--" to separate revisions from paths to avoid ambiguity
-	rawCmd := exec.Command("git", "-C", repoDir, "diff", "--raw", "--abbrev=40", "-M", "-C", "--find-copies-harder", from, to, "--")
-	numstatCmd := exec.Command("git", "-C", repoDir, "diff", "--numstat", from, to, "--")
+	// Build command arguments based on whether we're comparing to working directory
+	var rawArgs, numstatArgs []string
+
+	if to == "" {
+		// Compare against working directory (omit 'to' argument)
+		rawArgs = []string{"-C", repoDir, "diff", "--raw", "--abbrev=40", "-M", "-C", "--find-copies-harder", from, "--"}
+		numstatArgs = []string{"-C", repoDir, "diff", "--numstat", from, "--"}
+	} else {
+		// Compare two commits
+		rawArgs = []string{"-C", repoDir, "diff", "--raw", "--abbrev=40", "-M", "-C", "--find-copies-harder", from, to, "--"}
+		numstatArgs = []string{"-C", repoDir, "diff", "--numstat", from, to, "--"}
+	}
+
+	rawCmd := exec.Command("git", rawArgs...)
+	numstatCmd := exec.Command("git", numstatArgs...)
 
 	rawOut, err := rawCmd.CombinedOutput()
 	if err != nil {
@@ -40,7 +55,22 @@ func GetDiff(repoDir, from, to string) ([]DiffFile, error) {
 }
 
 // GetFileContent returns the content of a file at a specific git hash
-func GetFileContent(repoDir, hash string) (string, error) {
+// If hash is all zeros (0000000000000000000000000000000000000000), reads from working directory using path
+func GetFileContent(repoDir, hash, path string) (string, error) {
+	// Check if this is a working directory file (hash is all zeros)
+	if hash == "0000000000000000000000000000000000000000" {
+		if path == "" {
+			return "", fmt.Errorf("cannot get working directory file: path is required when hash is all zeros")
+		}
+		// Read file directly from working directory
+		fullPath := filepath.Join(repoDir, path)
+		content, err := os.ReadFile(fullPath)
+		if err != nil {
+			return "", fmt.Errorf("error reading file from working directory: %w", err)
+		}
+		return string(content), nil
+	}
+
 	cmd := exec.Command("git", "-C", repoDir, "show", hash)
 	out, err := cmd.CombinedOutput()
 	if err != nil {

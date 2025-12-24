@@ -48,6 +48,10 @@ func HandleDiff(cfg *Config) http.HandlerFunc {
 
 		if toCommit == "" {
 			toCommit = cfg.ChangedCommit
+		} else if toCommit == "CURRENT" {
+			// CURRENT means compare against working directory
+			// Git diff will compare against working directory if we pass empty string
+			toCommit = ""
 		} else {
 			// Resolve the provided ref
 			resolved, err := git.ResolveRef(cfg.RepoDir, toCommit)
@@ -57,6 +61,7 @@ func HandleDiff(cfg *Config) http.HandlerFunc {
 			}
 			toCommit = resolved
 		}
+
 
 		files, err := git.GetDiff(cfg.RepoDir, fromCommit, toCommit)
 		if err != nil {
@@ -78,12 +83,14 @@ func HandleFileContent(cfg *Config) http.HandlerFunc {
 		}
 
 		hash := r.URL.Query().Get("hash")
+		path := r.URL.Query().Get("path")
+
 		if hash == "" {
 			http.Error(w, "hash parameter required", http.StatusBadRequest)
 			return
 		}
 
-		content, err := git.GetFileContent(cfg.RepoDir, hash)
+		content, err := git.GetFileContent(cfg.RepoDir, hash, path)
 		if err != nil {
 			http.Error(w, fmt.Sprintf("Failed to get file content: %v", err), http.StatusInternalServerError)
 			return
