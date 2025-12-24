@@ -331,281 +331,11 @@ Trigger graceful shutdown
 4. Test markdown output format
 5. Handle edge cases (binary files, large diffs, etc.)
 
-## Detailed TODO List
+---
 
-### Backend Tasks
+**Note**: All tasks have been migrated to beads (bd) issue tracker. Run `bd ready` to see available work.
 
-#### Project Setup
-- [x] Create `diffreviewer` directory structure
-- [x] Initialize Go module (`go mod init diffreviewer`)
-- [x] Create `cmd/diffreviewer/main.go` with CLI parsing
-- [x] Add CLI flags: base-branch (optional, default "main"), changed-branch, port, notes (optional), repo
-- [x] Validate CLI arguments
-- [x] Add logic to write notes to stdout if --notes not specified
-
-#### Git Integration
-- [x] Create `internal/git/diff.go`
-- [x] Extract `GitRawDiff()` from `git_tools/git_tools.go`
-- [x] Extract `parseRawDiff()` and `parseRawDiffWithNumstat()`
-- [x] Copy `DiffFile` struct definition
-- [x] Add function to get file content by git hash
-- [x] Add function to validate branch names
-- [x] Test git operations independently
-
-#### HTTP Server
-- [x] Create HTTP server in `main.go`
-- [x] Initialize HTTP server with configurable port
-- [x] Add static file serving for web UI (embedded with go:embed)
-- [x] Add graceful shutdown handling
-- [x] Add shutdown channel for "Done" button
-- [x] Add CORS headers for development
-
-#### API Handlers - Diff
-- [x] Create `internal/handlers/handlers.go`
-- [x] Implement `GET /api/diff` handler
-- [x] Implement `GET /api/file-content?hash=...` handler
-- [x] Implement `POST /api/save-file` handler (save edited content)
-- [x] Add error handling and proper HTTP status codes
-- [x] Add JSON response helpers
-- [x] Test handlers with sample repository
-- [x] Test file save functionality
-
-#### Notes System
-- [x] Create `internal/notes/notes.go`
-- [x] Define `Note` struct: `{File string, Line int, LineContent string, Text string}`
-- [x] Add `GeneralNotes string` field to notes structure
-- [x] Implement `SaveNotes(filename, notes, generalNotes)` function
-- [x] Implement `SaveNotesToWriter(w io.Writer, notes, generalNotes)` for stdout support
-- [x] Implement markdown formatting for notes with "General Notes" section
-- [x] Include line content in triple backticks before each note
-- [x] Test notes I/O with sample data
-- [x] Test notes output to stdout
-
-#### API Handlers - Notes
-- [x] Implement notes handlers in `internal/handlers/handlers.go`
-- [x] Implement `GET /api/notes` handler (returns line notes and general notes)
-- [x] Implement `POST /api/notes` handler (add/update line note)
-- [x] Implement `DELETE /api/notes` handler (delete line note)
-- [x] Implement `POST /api/general-notes` handler (update general notes)
-- [x] Implement `GET /api/general-notes` handler (get general notes)
-- [x] Add validation for note data
-- [x] Thread-safe access to notes file
-- [x] Test concurrent note updates
-
-#### Shutdown
-- [x] Implement shutdown handler in `internal/handlers/handlers.go`
-- [x] Implement `POST /api/shutdown` handler
-- [x] Receive general notes text in shutdown request body
-- [x] Save general notes before shutdown
-- [x] Trigger graceful server shutdown
-- [x] Ensure all notes are flushed before exit (to file or stdout)
-- [x] Print notes to stdout if --notes not specified
-- [x] Print exit message
-
-### Frontend Tasks
-
-#### Project Setup
-- [x] Create `web` directory structure
-- [x] Initialize npm project (`npm init`)
-- [x] Add dependencies: lit, monaco-editor, tailwindcss
-- [x] Create `vite.config.ts` for build
-- [x] Create `tsconfig.json` for TypeScript
-- [x] Set up Tailwind CSS configuration
-- [x] Create `index.html` template
-- [x] Add build scripts to `package.json`
-
-#### Type Definitions
-- [x] Create `web/src/types.ts`
-- [x] Extract `DiffFile` interface from Sketch
-- [x] Add `Note` interface: `{file: string, line: number, lineContent: string, text: string}`
-- [x] Add `NotesResponse` interface: `{lineNotes: Note[], generalNotes: string}`
-- [x] Add API response types
-- [x] Export all types
-
-#### API Service
-- [x] Create `web/src/services/api.ts`
-- [x] Implement `fetchDiff()` function
-- [x] Implement `fetchFileContent(hash)` function
-- [x] Implement `saveFileContent(path, content)` function
-- [x] Add error handling wrapper
-- [x] Add TypeScript types for responses
-- [x] Test API calls
-
-#### Notes Service
-- [x] Create `web/src/services/notes.ts`
-- [x] Implement `fetchNotes()` function (returns line notes and general notes)
-- [x] Implement `addNote(file, line, lineContent, text)` function
-- [x] Implement `updateNote(file, line, lineContent, text)` function
-- [x] Implement `deleteNote(file, line)` function
-- [x] Implement `updateGeneralNotes(text)` function
-- [x] Implement `fetchGeneralNotes()` function
-- [x] Add local caching of notes
-- [x] Test notes service
-
-#### Monaco Component
-- [x] Create `web/src/components/monaco-view.ts`
-- [x] Extract from `sketch-monaco-view.ts`
-- [x] Keep edit functionality on right side (modified code)
-- [x] Keep diff display with syntax highlighting
-- [x] Keep save handler (Cmd/Ctrl+S)
-- [x] Add line click event for notes (include line content)
-- [x] Add glyph decorations for lines with notes
-- [x] Style notes indicators (e.g., comment icons)
-- [x] Test Monaco integration
-- [x] Test file editing and saving
-
-#### Diff Viewer Component
-- [x] Create `web/src/components/diff-viewer.ts`
-- [x] Simplify from `sketch-diff2-view.ts`
-- [x] Remove range picker (branches from backend)
-- [x] Keep file selector dropdown
-- [x] Add file statistics display (+/- counts)
-- [x] Load diff on mount
-- [x] Handle monaco-save events from Monaco component
-- [x] Call save API on file edits
-- [x] Handle loading and error states
-- [x] Test file switching
-- [x] Test file editing workflow
-
-#### Notes Popup Component
-- [x] Create inline note popup in Monaco editor
-- [x] Display note textarea when clicking gutter margin
-- [x] Show line content context in note popup
-- [x] Add "Add" and "Cancel" buttons in note popup
-- [x] Notes appended to general notes when added
-- [x] Style inline note popup
-
-#### Done Button Component
-- [x] Create `web/src/components/done-button.ts`
-- [x] Add prominent "Done" button in header
-- [x] Get general notes text from text box on click
-- [x] Send general notes text in shutdown API call
-- [x] Show confirmation dialog
-- [x] Display "Shutting down..." message
-- [x] Style done button (prominent, hard to miss)
-
-#### General Notes Text Box
-- [x] Create `web/src/components/general-notes-input.ts` (or add to main app)
-- [x] Add text box at bottom of screen (like chatInput)
-- [x] Style similar to Sketch's chat input
-- [x] Load existing general notes on mount
-- [x] Auto-save general notes on change (debounced)
-- [x] Provide textarea for multi-line input
-- [x] Add placeholder text: "Add general review notes here..."
-- [x] Make resizable
-
-#### Main App
-- [x] Create `web/src/main.ts`
-- [x] Initialize app shell
-- [x] Register all web components
-- [x] Add global styles
-- [x] Create app layout: header, diff view, general notes input at bottom
-- [x] Ensure general notes input is always visible at bottom
-- [x] Test overall integration
-- [ ] Add dark mode support (future enhancement)
-
-#### UI Polish
-- [x] Add loading states
-- [x] Add error messages
-- [x] Add empty states (no diffs, no notes)
-- [x] Monaco line decorations for notes working
-- [x] Syntax highlighting working (Monaco built-in)
-- [ ] Add keyboard shortcuts (j/k for navigation, n for note) - future enhancement
-- [ ] Add tooltips and help text - future enhancement
-- [ ] Test responsive layout - works on desktop
-- [ ] Add error retry functionality - future enhancement
-
-### Build & Integration
-
-#### Build System
-- [x] Create root `Makefile`
-- [x] Add `make build-frontend` target (runs vite build)
-- [x] Add `make build-backend` target (runs go build)
-- [x] Add `make build` target (builds both)
-- [x] Embed frontend assets into Go binary (using go:embed)
-- [x] Add `make dev` target for development
-- [x] Add `make clean` target
-- [x] Test build process
-
-#### Integration
-- [x] Configure Go to serve embedded assets
-- [x] Test frontend loads correctly
-- [x] Test API calls work end-to-end
-- [x] Test notes persistence across restarts
-- [x] Test graceful shutdown
-- [x] Test with real git repositories
-
-### Testing & Documentation
-
-#### Testing
-- [x] Test with small diff (few files, few changes)
-- [x] Test with large diff (many files, many changes)
-- [x] Test with binary files in diff
-- [x] Test with renamed files
-- [x] Test with deleted files
-- [x] Test with added files
-- [x] Test file editing and saving
-- [x] Test save with Cmd/Ctrl+S keyboard shortcut
-- [x] Test editing multiple files
-- [x] Test notes on different lines (basic)
-- [x] Test markdown output format
-- [x] Test invalid branch names
-- [x] Test missing notes file (create new)
-- [x] Test graceful shutdown
-- [x] Test with real git repositories
-- [ ] Test concurrent note updates (needs stress testing)
-- [ ] Test existing notes file (append/load existing)
-- [ ] Test port already in use
-- [ ] Test shutdown while loading
-
-#### Documentation
-- [x] Write `README.md` with overview
-- [x] Add installation instructions
-- [x] Add usage examples
-- [x] Document CLI flags and defaults
-- [ ] Add screenshots
-- [x] Document notes file format
-- [x] Document stdout notes output format
-- [ ] Add troubleshooting section
-- [ ] Document keyboard shortcuts (when implemented)
-- [ ] Add contributing guidelines
-- [ ] Add license file
-
-#### Packaging
-- [ ] Create release builds for Linux
-- [ ] Create release builds for macOS
-- [ ] Create release builds for Windows
-- [ ] Add installation script
-- [ ] Test on clean system
-
-## Future Enhancements
-
-### Already Implemented ✅
-- ✅ ~~Add support for comparing commits instead of just branches~~ - DONE via range-picker
-
-### High Priority
-- [ ] Add keyboard shortcuts (j/k for file navigation, n for adding note, ? for help)
-- [ ] Add keyboard shortcut to add note on current line
-- [ ] Add dark mode support
-- [ ] Test and fix loading existing notes files (append mode)
-- [ ] Add note templates for common review comments
-
-### Medium Priority
-- [ ] Add filtering by file path/extension
-- [ ] Add search within diffs
-- [ ] Export notes to other formats (JSON, HTML)
-- [ ] Add tooltips and help text throughout UI
-- [ ] Add statistics (files reviewed, notes made, time spent)
-- [ ] Test on macOS and Windows
-- [ ] Add installation script for easy deployment
-
-### Low Priority / Nice to Have
-- [ ] Add note sharing via URL
-- [ ] Add review checklist feature
-- [ ] Add multi-user review support (complex - needs sessions, auth)
-- [ ] Add git integration (post notes as PR comments)
-- [ ] Add responsive layout for mobile/tablet
-- [ ] Add ability to compare working directory changes (not just commits)
+---
 
 ## Technical Decisions
 
@@ -861,3 +591,33 @@ Used direct method calls instead of property binding:
 - `diffreviewer/web/src/components/diff-viewer.ts` - Added `loadDiffForRange()` method
 - `diffreviewer/web/src/components/app-shell.ts` - Changed to call method directly
 - `diffreviewer/web/src/components/range-picker.ts` - Added `requestUpdate()` calls
+
+
+# Agent Instructions
+
+This project uses **bd** (beads) for issue tracking. Run `bd onboard` to get started.
+
+## Quick Reference
+
+```bash
+bd ready              # Find available work
+bd show <id>          # View issue details
+bd update <id> --status in_progress  # Claim work
+bd close <id>         # Complete work
+bd sync               # Sync with git
+```
+
+## Landing the Plane (Session Completion)
+
+**When ending a work session**, you MUST complete ALL steps below. Work is NOT complete until `git push` succeeds.
+
+**MANDATORY WORKFLOW:**
+
+1. **File issues for remaining work** - Create issues for anything that needs follow-up
+2. **Run quality gates** (if code changed) - Tests, linters, builds
+3. **Update issue status** - Close finished work, update in-progress items
+6. **Verify** - All changes committed AND pushed
+7. **Hand off** - Provide context for next session
+
+
+
