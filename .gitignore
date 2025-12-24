@@ -8,3 +8,4 @@ dist
 
 # makefile artifact
 /sketch
+/.playwright-mcp/
