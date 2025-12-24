@@ -140,11 +140,11 @@ export class DiffViewer extends DiffReviewerElement {
       }
 
       const [original, modified] = await Promise.all([
-        file.old_hash && file.old_hash !== '0000000000000000000000000000000000000000'
-          ? fetchFileContent(file.old_hash)
+        file.old_hash
+          ? fetchFileContent(file.old_hash, file.old_path || file.path)
           : Promise.resolve(''),
-        file.new_hash && file.new_hash !== '0000000000000000000000000000000000000000'
-          ? fetchFileContent(file.new_hash)
+        file.new_hash
+          ? fetchFileContent(file.new_hash, file.path)
           : Promise.resolve(''),
       ]);
 

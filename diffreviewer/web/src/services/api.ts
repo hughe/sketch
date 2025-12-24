@@ -44,21 +44,32 @@ export async function fetchDiff(from?: string, to?: string): Promise<DiffFile[]>
 
 /**
  * Fetches file content by git hash
+ * @param hash Git object hash (or all zeros for working directory)
+ * @param path File path (required when hash is all zeros for working directory)
  */
-export async function fetchFileContent(hash: string): Promise<string> {
+export async function fetchFileContent(hash: string, path?: string): Promise<string> {
   try {
-    if (!hash || hash === '0000000000000000000000000000000000000000') {
+    if (!hash) {
       console.warn('Invalid file hash, returning empty string');
       return '';
     }
-    
-    const url = `./api/file-content?hash=${encodeURIComponent(hash)}`;
+
+    // Build URL with hash and optional path
+    const params = new URLSearchParams();
+    params.append('hash', hash);
+
+    // If hash is all zeros (working directory), path is required
+    if (hash === '0000000000000000000000000000000000000000' && path) {
+      params.append('path', path);
+    }
+
+    const url = `./api/file-content?${params.toString()}`;
     const response = await fetch(url);
-    
+
     if (!response.ok) {
       throw new Error(`Failed to fetch file content: ${response.statusText}`);
     }
-    
+
     return await response.text();
   } catch (error) {
     console.error('Error fetching file content:', error);
