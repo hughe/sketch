@@ -22,7 +22,10 @@ export class RangePicker extends DiffReviewerElement {
   private toCommit: string = '';
 
   @property({ attribute: false })
-  private dropdownOpen: boolean = false;
+  private fromDropdownOpen: boolean = false;
+
+  @property({ attribute: false })
+  private toDropdownOpen: boolean = false;
 
   @property({ attribute: false })
   private loading: boolean = true;
@@ -235,29 +238,52 @@ export class RangePicker extends DiffReviewerElement {
     }
   }
 
-  private toggleDropdown(e: Event) {
+  private toggleFromDropdown(e: Event) {
     e.stopPropagation();
-    this.dropdownOpen = !this.dropdownOpen;
-    // Explicitly request update since Shadow DOM is disabled
+    this.fromDropdownOpen = !this.fromDropdownOpen;
+    this.toDropdownOpen = false; // Close the other dropdown
     this.requestUpdate();
 
-    if (this.dropdownOpen) {
+    if (this.fromDropdownOpen) {
       setTimeout(() => {
-        document.addEventListener('click', this.closeDropdown, { once: true });
+        document.addEventListener('click', this.closeFromDropdown, { once: true });
       }, 0);
     }
   }
 
-  private closeDropdown = () => {
-    this.dropdownOpen = false;
-    // Explicitly request update since Shadow DOM is disabled
+  private toggleToDropdown(e: Event) {
+    e.stopPropagation();
+    this.toDropdownOpen = !this.toDropdownOpen;
+    this.fromDropdownOpen = false; // Close the other dropdown
+    this.requestUpdate();
+
+    if (this.toDropdownOpen) {
+      setTimeout(() => {
+        document.addEventListener('click', this.closeToDropdown, { once: true });
+      }, 0);
+    }
+  }
+
+  private closeFromDropdown = () => {
+    this.fromDropdownOpen = false;
     this.requestUpdate();
   };
 
-  private selectCommit(hash: string) {
+  private closeToDropdown = () => {
+    this.toDropdownOpen = false;
+    this.requestUpdate();
+  };
+
+  private selectFromCommit(hash: string) {
     this.fromCommit = hash;
-    this.dropdownOpen = false;
-    // Explicitly request update since Shadow DOM is disabled
+    this.fromDropdownOpen = false;
+    this.requestUpdate();
+    this.dispatchRangeEvent();
+  }
+
+  private selectToCommit(hashOrCurrent: string) {
+    this.toCommit = hashOrCurrent;
+    this.toDropdownOpen = false;
     this.requestUpdate();
     this.dispatchRangeEvent();
   }
@@ -311,38 +337,39 @@ export class RangePicker extends DiffReviewerElement {
       return html`<div class="error">${this.error}</div>`;
     }
 
-    const selectedCommit = this.commits.find((c) => c.hash === this.fromCommit);
+    const selectedFromCommit = this.commits.find((c) => c.hash === this.fromCommit);
+    const selectedToCommit = this.toCommit === 'CURRENT' ? null : this.commits.find((c) => c.hash === this.toCommit);
 
     return html`
       <div class="container">
         <div class="range-selectors">
-          <label>Diff from:</label>
+          <label>From</label>
           <div class="dropdown-container">
             <button
               class="dropdown-button"
-              @click=${this.toggleDropdown}
-              @blur=${() => setTimeout(() => this.closeDropdown(), 150)}
+              @click=${this.toggleFromDropdown}
+              @blur=${() => setTimeout(() => this.closeFromDropdown(), 150)}
             >
               <div class="commit-button-content">
-                ${selectedCommit
+                ${selectedFromCommit
                   ? html`
                       <span class="commit-hash"
-                        >${this.getShortHash(selectedCommit.hash)}</span
+                        >${this.getShortHash(selectedFromCommit.hash)}</span
                       >
                       <span class="commit-subject"
-                        >${selectedCommit.subject}</span
+                        >${selectedFromCommit.subject}</span
                       >
                     `
                   : 'Select commit...'}
               </div>
               <svg
-                class="dropdown-arrow ${this.dropdownOpen ? 'open' : ''}"
+                class="dropdown-arrow ${this.fromDropdownOpen ? 'open' : ''}"
                 viewBox="0 0 12 12"
               >
                 <path d="M6 8l-4-4h8z" fill="currentColor" />
               </svg>
             </button>
-            ${this.dropdownOpen
+            ${this.fromDropdownOpen
               ? html`
                   <div class="dropdown-menu">
                     ${this.commits.map(
@@ -351,7 +378,80 @@ export class RangePicker extends DiffReviewerElement {
                           class="dropdown-item ${commit.hash === this.fromCommit
                             ? 'selected'
                             : ''}"
-                          @click=${() => this.selectCommit(commit.hash)}
+                          @click=${() => this.selectFromCommit(commit.hash)}
+                        >
+                          <span class="commit-hash"
+                            >${this.getShortHash(commit.hash)}</span
+                          >
+                          <span class="commit-subject">${commit.subject}</span>
+                          ${commit.refs && commit.refs.length > 0
+                            ? html`
+                                <div class="commit-refs">
+                                  ${commit.refs.map((ref) => {
+                                    const shortRef = this.getShortRefName(ref);
+                                    const refClass = this.isTag(ref)
+                                      ? 'tag'
+                                      : 'branch';
+                                    return html`<span
+                                      class="ref-badge ${refClass}"
+                                      >${shortRef}</span
+                                    >`;
+                                  })}
+                                </div>
+                              `
+                            : ''}
+                        </div>
+                      `
+                    )}
+                  </div>
+                `
+              : ''}
+          </div>
+
+          <label>To</label>
+          <div class="dropdown-container">
+            <button
+              class="dropdown-button"
+              @click=${this.toggleToDropdown}
+              @blur=${() => setTimeout(() => this.closeToDropdown(), 150)}
+            >
+              <div class="commit-button-content">
+                ${this.toCommit === 'CURRENT'
+                  ? html`<span class="commit-subject">CURRENT (working directory)</span>`
+                  : selectedToCommit
+                  ? html`
+                      <span class="commit-hash"
+                        >${this.getShortHash(selectedToCommit.hash)}</span
+                      >
+                      <span class="commit-subject"
+                        >${selectedToCommit.subject}</span
+                      >
+                    `
+                  : 'Select commit...'}
+              </div>
+              <svg
+                class="dropdown-arrow ${this.toDropdownOpen ? 'open' : ''}"
+                viewBox="0 0 12 12"
+              >
+                <path d="M6 8l-4-4h8z" fill="currentColor" />
+              </svg>
+            </button>
+            ${this.toDropdownOpen
+              ? html`
+                  <div class="dropdown-menu">
+                    <div
+                      class="dropdown-item ${this.toCommit === 'CURRENT' ? 'selected' : ''}"
+                      @click=${() => this.selectToCommit('CURRENT')}
+                    >
+                      <span class="commit-subject">CURRENT (working directory)</span>
+                    </div>
+                    ${this.commits.map(
+                      (commit) => html`
+                        <div
+                          class="dropdown-item ${commit.hash === this.toCommit
+                            ? 'selected'
+                            : ''}"
+                          @click=${() => this.selectToCommit(commit.hash)}
                         >
                           <span class="commit-hash"
                             >${this.getShortHash(commit.hash)}</span
